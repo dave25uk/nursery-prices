@@ -107,7 +107,7 @@
             var lines = cleanData.trim().split('\n');
             nurseryData = {};
             for (var i = 0; i < lines.length; i++) {
-                var cols = lines[i].split('\t');
+                var cols = lines[i].split(',');
                 if (cols.length >= 3) {
                     var cat = cols[0].trim();
                     if (!nurseryData[cat]) nurseryData[cat] = [];
@@ -120,21 +120,37 @@
         }
 
         // NEW ASYNC INIT: Fetches prices.csv from GitHub automatically
-        async function init() {
-            try {
-                const response = await fetch('prices.csv?v=' + new Date().getTime());
-                if (response.ok) {
-                    const remoteData = await response.text();
-                    localStorage.setItem('forge_nursery_data', remoteData);
-                }
-            } catch (e) { console.log("Offline mode active."); }
-
-            var storedData = localStorage.getItem('forge_nursery_data') || defaultData;
-            document.getElementById('data-input').value = sanitizeEncoding(storedData);
-            parseData(storedData);
-            renderTabs();
-            showHome();
+async function init() {
+    try {
+        // We use a "Cache Buster" to force GitHub to give us the newest file
+        const cacheBuster = '?v=' + new Date().getTime();
+        const response = await fetch('prices.csv' + cacheBuster); 
+        
+        if (response.ok) {
+            const remoteData = await response.text();
+            // Only save if we actually got text back
+            if (remoteData && remoteData.length > 10) {
+                localStorage.setItem('forge_nursery_data', remoteData);
+                console.log("Remote data loaded successfully");
+            }
         }
+    } catch (e) { 
+        console.log("Could not reach GitHub, using offline backup."); 
+    }
+
+    // Load from memory (either the fresh data we just got, or the old backup)
+    var storedData = localStorage.getItem('forge_nursery_data');
+    
+    // If we have nothing at all, use the instructions so the screen isn't blank
+    if (!storedData) {
+        storedData = defaultData;
+    }
+
+    document.getElementById('data-input').value = sanitizeEncoding(storedData);
+    parseData(storedData);
+    renderTabs();
+    showHome();
+}
 
         function renderTabs() {
             var categories = Object.keys(nurseryData).sort(); 
