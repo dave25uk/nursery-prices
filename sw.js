@@ -1,13 +1,22 @@
-const cacheName = 'old-forge-v2'; // Changed version to v2 to force a refresh
+const cacheName = 'old-forge-v3'; // Incremented to v3
+const assets = [
+  './',
+  './index.html',
+  './manifest.json',
+  './prices.csv'
+];
 
 self.addEventListener('install', e => {
-  self.skipWaiting(); // Forces the new service worker to take over immediately
+  e.waitUntil(
+    caches.open(cacheName).then(cache => {
+      return cache.addAll(assets);
+    })
+  );
+  self.skipWaiting();
 });
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-
-  // STRATEGY: Network First for the price list, Cache First for the app shell
   if (url.pathname.includes('prices.csv')) {
     e.respondWith(
       fetch(e.request)
@@ -16,10 +25,9 @@ self.addEventListener('fetch', e => {
           caches.open(cacheName).then(cache => cache.put(e.request, clone));
           return res;
         })
-        .catch(() => caches.match(e.request)) // Fallback to cache if Wi-Fi is dead
+        .catch(() => caches.match(e.request))
     );
   } else {
-    // Standard cache-first for the UI (keeps it fast)
     e.respondWith(
       caches.match(e.request).then(res => res || fetch(e.request))
     );
