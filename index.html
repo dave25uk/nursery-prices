@@ -129,33 +129,26 @@
 
         // NEW ASYNC INIT: Fetches prices.csv from GitHub automatically
 async function init() {
+    let dataToUse = defaultData; // Default fallback
+
     try {
-        // We use a "Cache Buster" to force GitHub to give us the newest file
         const cacheBuster = '?v=' + new Date().getTime();
         const response = await fetch('prices.csv' + cacheBuster); 
         
         if (response.ok) {
             const remoteData = await response.text();
-            // Only save if we actually got text back
-            if (remoteData && remoteData.length > 10) {
+            if (remoteData && remoteData.length > 50) { // Ensure it's not an empty file
                 localStorage.setItem('forge_nursery_data', remoteData);
-                console.log("Remote data loaded successfully");
+                dataToUse = remoteData;
             }
         }
     } catch (e) { 
-        console.log("Could not reach GitHub, using offline backup."); 
+        console.log("Offline: Using backup.");
+        dataToUse = localStorage.getItem('forge_nursery_data') || defaultData;
     }
 
-    // Load from memory (either the fresh data we just got, or the old backup)
-    var storedData = localStorage.getItem('forge_nursery_data');
-    
-    // If we have nothing at all, use the instructions so the screen isn't blank
-    if (!storedData) {
-        storedData = defaultData;
-    }
-
-    document.getElementById('data-input').value = sanitizeEncoding(storedData);
-    parseData(storedData);
+    document.getElementById('data-input').value = sanitizeEncoding(dataToUse);
+    parseData(dataToUse);
     renderTabs();
     showHome();
 }
