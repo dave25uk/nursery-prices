@@ -1,25 +1,27 @@
-const cacheName = 'old-forge-v1';
-const assets = [
-  './',
-  './index.html',
-  './manifest.json',
-  './prices.csv' // Add this line!
-];
+const cacheName = 'old-forge-v2'; // Changed version to v2 to force a refresh
 
-// Install the service worker and cache files
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(cacheName).then(cache => {
-      return cache.addAll(assets);
-    })
-  );
+  self.skipWaiting(); // Forces the new service worker to take over immediately
 });
 
-// Serve the app from cache when offline
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
-    })
-  );
+  const url = new URL(e.request.url);
+
+  // STRATEGY: Network First for the price list, Cache First for the app shell
+  if (url.pathname.includes('prices.csv')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(cacheName).then(cache => cache.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request)) // Fallback to cache if Wi-Fi is dead
+    );
+  } else {
+    // Standard cache-first for the UI (keeps it fast)
+    e.respondWith(
+      caches.match(e.request).then(res => res || fetch(e.request))
+    );
+  }
 });
