@@ -3,92 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Nursery Prices">
+    
     <title>The Old Forge Nursery - Price List 2026</title>
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Nursery Prices">
     <style>
-        :root { 
-            --primary: #2e7d32; 
-            --bg: #f4f4f4; 
-            --text: #222; 
-            --card-bg: #ffffff;
-            --border: #444;
-            --tab-bg: #ffffff;
-            --tab-text: #444;
-            --accent: var(--primary);
-        }
-
-        body { 
-            font-family: -apple-system, Helvetica, Arial, sans-serif; 
-            background: var(--bg); margin: 0; padding: 0; color: var(--text); 
-            padding-bottom: 200px; 
-        }
-
-        .header {
-            background: var(--card-bg); padding: 15px; border-bottom: 2px solid var(--border);
-            position: sticky; top: 0; z-index: 100;
-        }
+        :root { --primary: #2e7d32; --bg: #f4f4f4; --text: #222; --card-bg: #ffffff; --border: #444; --tab-bg: #ffffff; --tab-text: #444; --accent: var(--primary); }
+        body { font-family: -apple-system, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 200px; }
+        .header { background: var(--card-bg); padding: 15px; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .title-row { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
         h1 { margin: 0; font-size: 1.2em; color: var(--primary); text-transform: uppercase; }
-
-        #search-bar { 
-            width: 100%; padding: 15px; font-size: 18px; 
-            border: 2px solid var(--border); border-radius: 10px; 
-            box-sizing: border-box; -webkit-appearance: none;
-        }
-
-        /* Home Page */
+        #search-bar { width: 100%; padding: 15px; font-size: 18px; border: 2px solid var(--border); border-radius: 10px; box-sizing: border-box; -webkit-appearance: none; }
         #home-page { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 50vh; text-align: center; padding: 20px; }
         .home-title { font-size: 2.4em; font-weight: 800; margin-bottom: 5px; color: var(--primary); }
         .home-subtitle { font-size: 1.6em; font-weight: 600; }
-
-        /* Admin Blocker / Confirmation Box */
-        #admin-blocker {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.85); z-index: 2000;
-            flex-direction: column; justify-content: center; align-items: center;
-            color: white; text-align: center; padding: 20px;
-        }
+        #admin-blocker { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 20px; }
         .blocker-box { background: white; color: #333; padding: 30px; border-radius: 15px; max-width: 400px; width: 90%; }
-        .blocker-box h3 { margin-top: 0; font-size: 1.5em; }
         .blocker-btn { padding: 15px 30px; margin: 10px; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1em; cursor: pointer; width: 80%; }
         .btn-confirm { background: #d32f2f; color: white; }
         .btn-cancel { background: #eee; color: #333; }
-
-        /* Bottom Tab Bar */
-        .tab-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; 
-            background: var(--tab-bg); border-top: 2px solid var(--border); 
-            display: flex; flex-wrap: wrap; justify-content: center; 
-            z-index: 1000; padding: 10px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-        }
-        .tab-item {
-            padding: 10px 15px; margin: 4px; border-radius: 8px; font-weight: bold; 
-            font-size: 0.85em; color: var(--tab-text); border: 1px solid #bbb; background: #fff;
-        }
+        .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--tab-bg); border-top: 2px solid var(--border); display: flex; flex-wrap: wrap; justify-content: center; z-index: 1000; padding: 10px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); }
+        .tab-item { padding: 10px 15px; margin: 4px; border-radius: 8px; font-weight: bold; font-size: 0.85em; color: var(--tab-text); border: 1px solid #bbb; background: #fff; }
         .tab-item.active { background: var(--primary); color: white; border-color: var(--primary); }
         .tab-admin { background: #f0f0f0; border-style: dashed; }
-
-        /* Product & Admin Views */
         #product-view, #admin-view { padding: 15px; display: none; }
-        .product-item { 
-            background: var(--card-bg); padding: 15px; margin-bottom: 12px;
-            border: 2px solid var(--border); border-radius: 10px; border-left: 12px solid var(--accent);
-        }
+        .product-item { background: var(--card-bg); padding: 15px; margin-bottom: 12px; border: 2px solid var(--border); border-radius: 10px; border-left: 12px solid var(--accent); }
         .prod-row { display: flex; justify-content: space-between; align-items: center; }
         .prod-name { font-size: 1.25em; font-weight: bold; }
         .prod-price { background: var(--accent); color: white; padding: 8px 14px; border-radius: 8px; font-weight: 800; min-width: 80px; text-align: center; }
-        .prod-offer { 
-            display: inline-block; margin-top: 10px; font-size: 0.95em; font-weight: bold; 
-            color: #d35400; background: #fff3e0; padding: 5px 10px; border-radius: 6px; border: 1px solid #ffe0b2; 
-        }
-
+        .prod-offer { display: inline-block; margin-top: 10px; font-size: 0.95em; font-weight: bold; color: #d35400; background: #fff3e0; padding: 5px 10px; border-radius: 6px; border: 1px solid #ffe0b2; }
         textarea { width: 100%; height: 250px; margin: 10px 0; border: 2px solid var(--border); border-radius: 8px; font-family: monospace; padding: 10px; box-sizing: border-box; font-size: 14px; }
         .btn-save { background: var(--primary); color: white; border: none; padding: 18px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 1.2em; }
-
-        /* Themes */
         .theme-compost { --accent: #795548; }
         .theme-perennials { --accent: #9c27b0; }
         .theme-shrubs { --accent: #2e7d32; }
@@ -109,9 +57,7 @@
     </div>
 
     <div class="header">
-        <div class="title-row">
-            <h1 id="view-title">The Old Forge Nursery</h1>
-        </div>
+        <div class="title-row"><h1>The Old Forge Nursery</h1></div>
         <input type="text" id="search-bar" placeholder="Search plants..." oninput="handleSearch()">
     </div>
 
@@ -124,11 +70,9 @@
 
     <div id="admin-view">
         <h2>Data Manager</h2>
-        <p>1. Select file from iPad:</p>
-        <input type="file" id="file-input" accept=".txt,.csv">
-        <p>2. Or paste from Excel directly:</p>
+        <p>This iPad is synced with GitHub. To update prices, upload <b>prices.csv</b> to GitHub. To manually override here, paste data below:</p>
         <textarea id="data-input"></textarea>
-        <button class="btn-save" onclick="saveData()">UPDATE PRICE LIST</button>
+        <button class="btn-save" onclick="saveData()">UPDATE PRICE LIST (Manual)</button>
     </div>
 
     <div class="tab-bar" id="tab-bar"></div>
@@ -137,6 +81,11 @@
         var nurseryData = {};
         var currentCategory = "home";
         var defaultData = "Instructions\tTap Admin to Upload Data\t£0\tWelcome!";
+
+        // Register Service Worker for Offline
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js');
+        }
 
         function getThemeClass(cat) {
             var c = cat.toLowerCase();
@@ -170,11 +119,24 @@
             }
         }
 
-        function init() {
+        // NEW ASYNC INIT: Fetches prices.csv from GitHub automatically
+        async function init() {
+            try {
+                const response = await fetch('prices.csv'); 
+                if (response.ok) {
+                    const remoteData = await response.text();
+                    localStorage.setItem('forge_nursery_data', remoteData);
+                }
+            } catch (e) { console.log("Offline mode active."); }
+
             var storedData = localStorage.getItem('forge_nursery_data') || defaultData;
             document.getElementById('data-input').value = sanitizeEncoding(storedData);
             parseData(storedData);
-            
+            renderTabs();
+            showHome();
+        }
+
+        function renderTabs() {
             var categories = Object.keys(nurseryData).sort(); 
             var tabHtml = '<div class="tab-item" id="tab-home" onclick="showHome()">HOME</div>';
             for (var i = 0; i < categories.length; i++) {
@@ -182,7 +144,6 @@
             }
             tabHtml += '<div class="tab-item tab-admin" id="tab-admin" onclick="requestAdmin()">ADMIN / EDIT</div>';
             document.getElementById('tab-bar').innerHTML = tabHtml;
-            showHome();
         }
 
         function requestAdmin() { document.getElementById('admin-blocker').style.display = 'flex'; }
@@ -194,23 +155,12 @@
             currentCategory = "admin";
             document.getElementById('admin-view').style.display = 'block';
             document.getElementById('tab-admin').classList.add('active');
-            document.getElementById('view-title').innerText = "Update Data";
         }
-
-        document.getElementById('file-input').addEventListener('change', function(e) {
-            var file = e.target.files[0];
-            if (!file) return;
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('data-input').value = sanitizeEncoding(e.target.result);
-            };
-            reader.readAsText(file);
-        });
 
         function saveData() {
             var inputVal = document.getElementById('data-input').value;
             localStorage.setItem('forge_nursery_data', sanitizeEncoding(inputVal));
-            alert("Data Updated!");
+            alert("Local Data Updated!");
             location.reload();
         }
 
@@ -225,14 +175,14 @@
             document.getElementById('product-view').innerHTML = html || '<div style="text-align:center;padding:50px;">No Results</div>';
         }
 
-        function showHome() { hideAll(); currentCategory = "home"; document.getElementById('home-page').style.display = 'flex'; document.getElementById('tab-home').classList.add('active'); document.getElementById('view-title').innerText = "The Old Forge Nursery"; }
-        function showProducts(cat, index) { hideAll(); currentCategory = cat; document.getElementById('product-view').style.display = 'block'; document.getElementById('view-title').innerText = cat; var activeTab = document.getElementById('tab-' + index); if (activeTab) activeTab.classList.add('active'); renderList(nurseryData[cat], cat); window.scrollTo(0,0); }
+        function showHome() { hideAll(); currentCategory = "home"; document.getElementById('home-page').style.display = 'flex'; document.getElementById('tab-home').classList.add('active'); }
+        function showProducts(cat, index) { hideAll(); currentCategory = cat; document.getElementById('product-view').style.display = 'block'; var activeTab = document.getElementById('tab-' + index); if (activeTab) activeTab.classList.add('active'); renderList(nurseryData[cat], cat); window.scrollTo(0,0); }
         function hideAll() { document.getElementById('home-page').style.display = 'none'; document.getElementById('product-view').style.display = 'none'; document.getElementById('admin-view').style.display = 'none'; var tabs = document.getElementsByClassName('tab-item'); for (var i=0; i<tabs.length; i++) tabs[i].classList.remove('active'); }
 
         function handleSearch() {
             var q = document.getElementById('search-bar').value.toLowerCase();
             if (q === "") { if (currentCategory === "home") showHome(); else if (currentCategory === "admin") showAdmin(); else showProducts(currentCategory); return; }
-            hideAll(); document.getElementById('product-view').style.display = 'block'; document.getElementById('view-title').innerText = "Search Results";
+            hideAll(); document.getElementById('product-view').style.display = 'block';
             var results = [];
             for (var cat in nurseryData) { for (var i = 0; i < nurseryData[cat].length; i++) { if (nurseryData[cat][i].name.toLowerCase().indexOf(q) !== -1) results.push(nurseryData[cat][i]); } }
             results.sort((a, b) => a.name.localeCompare(b.name));
