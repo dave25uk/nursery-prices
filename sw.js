@@ -2,7 +2,8 @@ const cacheName = 'old-forge-v1';
 const assets = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './prices.csv' // Add this line!
 ];
 
 // Install the service worker and cache files
