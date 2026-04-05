@@ -102,22 +102,30 @@
             return str.replace(/\uFFFD/g, '£').replace(/\u00C2\u00A3/g, '£').replace(/\u00A3/g, '£');
         }
 
-        function parseData(rawData) {
-            var cleanData = sanitizeEncoding(rawData);
-            var lines = cleanData.trim().split('\n');
-            nurseryData = {};
-            for (var i = 0; i < lines.length; i++) {
-                var cols = lines[i].split(',');
-                if (cols.length >= 3) {
-                    var cat = cols[0].trim();
-                    if (!nurseryData[cat]) nurseryData[cat] = [];
-                    nurseryData[cat].push({ name: cols[1].trim(), price: cols[2].trim(), offer: cols[3] ? cols[3].trim() : "" });
-                }
-            }
-            for (var cat in nurseryData) {
-                nurseryData[cat].sort((a, b) => a.name.localeCompare(b.name));
-            }
+       function parseData(rawData) {
+    var cleanData = sanitizeEncoding(rawData);
+    var lines = cleanData.trim().split('\n');
+    nurseryData = {};
+    
+    // We start 'i' at 1 to skip the header row (Category, Product Name...)
+    for (var i = 1; i < lines.length; i++) {
+        // Use a regex to split by comma but ignore commas inside quotes
+        var cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        
+        if (cols.length >= 3) {
+            var cat = cols[0].trim().replace(/^"|"$/g, ''); // Remove quotes
+            var name = cols[1].trim().replace(/^"|"$/g, '');
+            var price = cols[2].trim().replace(/^"|"$/g, '');
+            var offer = cols[3] ? cols[3].trim().replace(/^"|"$/g, '') : "";
+
+            if (!nurseryData[cat]) nurseryData[cat] = [];
+            nurseryData[cat].push({ name: name, price: price, offer: offer });
         }
+    }
+    for (var cat in nurseryData) {
+        nurseryData[cat].sort((a, b) => a.name.localeCompare(b.name));
+    }
+}
 
         // NEW ASYNC INIT: Fetches prices.csv from GitHub automatically
 async function init() {
