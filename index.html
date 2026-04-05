@@ -122,7 +122,7 @@
         // NEW ASYNC INIT: Fetches prices.csv from GitHub automatically
         async function init() {
             try {
-                const response = await fetch('prices.csv'); 
+                const response = await fetch('prices.csv?v=' + new Date().getTime());
                 if (response.ok) {
                     const remoteData = await response.text();
                     localStorage.setItem('forge_nursery_data', remoteData);
