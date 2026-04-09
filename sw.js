@@ -1,4 +1,4 @@
-const cacheName = 'old-forge-v6'; // Incremented to v6
+const cacheName = 'old-forge-v7'; // Incremented to v7
 const assets = [
   './',
   './index.html',
