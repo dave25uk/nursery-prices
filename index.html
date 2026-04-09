@@ -10,85 +10,23 @@
     <title>The Old Forge Nursery - Price List 2026</title>
     <style>
         :root { --primary: #2e7d32; --bg: #f4f4f4; --text: #222; --card-bg: #ffffff; --border: #444; --tab-bg: #ffffff; --tab-text: #444; --accent: var(--primary); }
-        
-        body { 
-            font-family: -apple-system, Helvetica, Arial, sans-serif; 
-            background: var(--bg); margin: 0; padding: 0; color: var(--text); 
-            height: 100dvh; display: flex; flex-direction: column; overflow: hidden; 
-            padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
-        }
-
+        body { font-family: -apple-system, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
         .header { background: var(--card-bg); padding: 8px 15px; border-bottom: 2px solid var(--border); z-index: 100; flex-shrink: 0; }
         h1 { margin: 0 0 5px 0; font-size: 1em; color: var(--primary); text-transform: uppercase; text-align: center;}
         #search-bar { width: 100%; padding: 10px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; box-sizing: border-box; }
-
         .main-layout { display: flex; flex: 1; overflow: hidden; }
-
-        .tab-bar { 
-            width: 200px; background: var(--tab-bg); border-right: 2px solid var(--border); 
-            display: flex; flex-direction: column; padding: 10px; overflow-y: auto; flex-shrink: 0;
-        }
-        
-        .tab-item { 
-            padding: 12px; margin-bottom: 6px; border-radius: 8px; font-weight: bold; font-size: 0.9em; 
-            color: var(--tab-text); border: 1px solid #bbb; background: #fff; cursor: pointer;
-        }
+        .tab-bar { width: 200px; background: var(--tab-bg); border-right: 2px solid var(--border); display: flex; flex-direction: column; padding: 10px; overflow-y: auto; flex-shrink: 0; }
+        .tab-item { padding: 12px; margin-bottom: 6px; border-radius: 8px; font-weight: bold; font-size: 0.9em; color: var(--tab-text); border: 1px solid #bbb; background: #fff; cursor: pointer; }
         .tab-item.active { background: var(--primary); color: white; border-color: var(--primary); }
-
         .content-area { flex: 1; overflow-y: auto; padding: 15px; -webkit-overflow-scrolling: touch; }
-        
         #home-page { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 50vh; text-align: center; }
-
-        /* COMPACT PRODUCT CARDS */
-        .product-item { 
-            background: var(--card-bg); 
-            padding: 10px 15px; /* Reduced from 16px */
-            margin-bottom: 8px; /* Reduced from 12px */
-            border: 2px solid var(--border); 
-            border-radius: 8px; 
-            border-left: 10px solid var(--accent); 
-        }
-
-        .prod-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; /* Spacing between columns */
-        }
-
-        .prod-name { 
-            flex: 2; /* Takes up most space */
-            font-size: 1.15em; 
-            font-weight: bold; 
-        }
-
-        .prod-price { 
-            flex: 0 0 80px; /* Fixed width for price */
-            background: var(--accent); 
-            color: white; 
-            padding: 6px; 
-            border-radius: 6px; 
-            font-weight: 800; 
-            text-align: center; 
-            font-size: 1em; 
-        }
-
-        .prod-offer-col { 
-            flex: 1.5; /* Space for the offer */
-            font-size: 0.9em; 
-            font-weight: bold; 
-            color: #d35400; 
-            background: #fff3e0; 
-            padding: 4px 10px; 
-            border-radius: 6px; 
-            border: 1px solid #ffe0b2;
-            text-align: center;
-            white-space: nowrap; /* Keeps offer on one line */
-        }
-
-        /* Hide the offer box if there is no offer */
+        #version-info { margin-top: 30px; font-size: 0.75em; color: #888; font-weight: bold; border-top: 1px solid #ddd; padding-top: 10px; letter-spacing: 1px; text-transform: uppercase; }
+        .product-item { background: var(--card-bg); padding: 10px 15px; margin-bottom: 8px; border: 2px solid var(--border); border-radius: 8px; border-left: 10px solid var(--accent); }
+        .prod-row { display: flex; align-items: center; gap: 15px; }
+        .prod-name { flex: 2; font-size: 1.15em; font-weight: bold; }
+        .prod-price { flex: 0 0 80px; background: var(--accent); color: white; padding: 6px; border-radius: 6px; font-weight: 800; text-align: center; font-size: 1em; }
+        .prod-offer-col { flex: 1.5; font-size: 0.9em; font-weight: bold; color: #d35400; background: #fff3e0; padding: 4px 10px; border-radius: 6px; border: 1px solid #ffe0b2; text-align: center; white-space: nowrap; }
         .hidden-offer { visibility: hidden; background: transparent; border: transparent; }
-
-        /* Theme Accents */
         .theme-compost { --accent: #795548; }
         .theme-perennials { --accent: #9c27b0; }
         .theme-shrubs { --accent: #2e7d32; }
@@ -98,31 +36,27 @@
     </style>
 </head>
 <body>
-
     <div class="header">
         <h1>The Old Forge Nursery</h1>
-        <input type="text" id="search-bar" placeholder="Search plants..." oninput="handleSearch()">
+        <input type="text" id="search-bar" placeholder="Search plants (try 'maple' or 'soil')..." oninput="handleSearch()">
     </div>
-
     <div class="main-layout">
         <div class="tab-bar" id="tab-bar"></div>
         <div class="content-area" id="content-container">
             <div id="home-page">
-    <img src="logo.png" alt="Logo" style="max-width: 400px; width: 60%; height: auto;">
-    <div style="font-size: 1.5em; font-weight: 600; color: var(--primary); margin-top: 10px;">Price List 2026</div>
-    
-    <div id="version-info" style="margin-top: 30px; font-size: 0.8em; color: #888; font-weight: bold;">
-        App Version: <span id="app-v-num">v7</span> | Last Updated: <span id="last-update">Checking...</span>
-    </div>
-</div>
+                <img src="logo.png" alt="Logo" style="max-width: 400px; width: 60%; height: auto;">
+                <div style="font-size: 1.5em; font-weight: 600; color: var(--primary); margin-top: 10px;">Price List 2026</div>
+                <div id="version-info">
+                    App Version: <span id="app-v-num">v7</span> | Updated: <span id="last-update">Checking...</span>
+                </div>
+            </div>
             <div id="product-view" style="display: none;"></div>
         </div>
     </div>
-
     <script>
         var nurseryData = {};
         var currentCategory = "home";
-        var defaultData = "Category,Product Name,Price,Offer\nInstructions,Please upload prices.csv to GitHub,£0,";
+        var defaultData = "Category,Product Name,Price,Offer,Tags\nInstructions,Please upload prices.csv to GitHub,£0,,";
 
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
 
@@ -139,30 +73,24 @@
 
         function sanitizeEncoding(str) { return str.replace(/\uFFFD/g, '£').replace(/\u00C2\u00A3/g, '£').replace(/\u00A3/g, '£'); }
 
-function parseData(rawData) {
-    var cleanData = sanitizeEncoding(rawData);
-    var lines = cleanData.trim().split('\n');
-    nurseryData = {};
-    
-    for (var i = 1; i < lines.length; i++) {
-        var cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-        if (cols.length >= 3) {
-            var cat = cols[0].trim().replace(/^"|"$/g, '');
-            var name = cols[1].trim().replace(/^"|"$/g, '');
-            var price = cols[2].trim().replace(/^"|"$/g, '');
-            var offer = cols[3] ? cols[3].trim().replace(/^"|"$/g, '') : "";
-            // NEW: Read the 5th column (tags)
-            var tags = cols[4] ? cols[4].trim().replace(/^"|"$/g, '') : "";
-
-            if (!nurseryData[cat]) nurseryData[cat] = [];
-            // NEW: Save the tags in the object but don't show them in the UI
-            nurseryData[cat].push({ name: name, price: price, offer: offer, tags: tags });
+        function parseData(rawData) {
+            var cleanData = sanitizeEncoding(rawData);
+            var lines = cleanData.trim().split('\n');
+            nurseryData = {};
+            for (var i = 1; i < lines.length; i++) {
+                var cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (cols.length >= 3) {
+                    var cat = cols[0].trim().replace(/^"|"$/g, '');
+                    var name = cols[1].trim().replace(/^"|"$/g, '');
+                    var price = cols[2].trim().replace(/^"|"$/g, '');
+                    var offer = cols[3] ? cols[3].trim().replace(/^"|"$/g, '') : "";
+                    var tags = cols[4] ? cols[4].trim().replace(/^"|"$/g, '') : "";
+                    if (!nurseryData[cat]) nurseryData[cat] = [];
+                    nurseryData[cat].push({ name: name, price: price, offer: offer, tags: tags });
+                }
+            }
+            for (var cat in nurseryData) { nurseryData[cat].sort((a, b) => a.name.localeCompare(b.name)); }
         }
-    }
-    for (var cat in nurseryData) {
-        nurseryData[cat].sort((a, b) => a.name.localeCompare(b.name));
-    }
-}
 
         async function init() {
             let dataToUse = defaultData;
@@ -174,9 +102,14 @@ function parseData(rawData) {
                     if (remoteData && remoteData.length > 50) {
                         localStorage.setItem('forge_nursery_data', remoteData);
                         dataToUse = remoteData;
+                        const lastMod = response.headers.get('Last-Modified');
+                        if (lastMod) document.getElementById('last-update').innerText = new Date(lastMod).toLocaleDateString('en-GB');
                     }
                 }
-            } catch (e) { dataToUse = localStorage.getItem('forge_nursery_data') || defaultData; }
+            } catch (e) { 
+                dataToUse = localStorage.getItem('forge_nursery_data') || defaultData;
+                document.getElementById('last-update').innerText = "Offline Cache";
+            }
             parseData(dataToUse);
             renderTabs();
             showHome();
@@ -196,17 +129,9 @@ function parseData(rawData) {
             var html = '';
             for (var i = 0; i < products.length; i++) {
                 var itemTheme = catName ? theme : getThemeClass(findCatOfProduct(products[i].name));
-                // If no offer, add a hidden class to maintain alignment
                 var offerClass = products[i].offer ? 'prod-offer-col' : 'prod-offer-col hidden-offer';
                 var offerText = products[i].offer ? 'OFFER: ' + products[i].offer : '';
-                
-                html += '<div class="product-item ' + itemTheme + '">' +
-                            '<div class="prod-row">' +
-                                '<div class="prod-name">' + products[i].name + '</div>' +
-                                '<div class="prod-price">' + products[i].price + '</div>' +
-                                '<div class="' + offerClass + '">' + offerText + '</div>' +
-                            '</div>' +
-                        '</div>';
+                html += '<div class="product-item ' + itemTheme + '"><div class="prod-row"><div class="prod-name">' + products[i].name + '</div><div class="prod-price">' + products[i].price + '</div><div class="' + offerClass + '">' + offerText + '</div></div></div>';
             }
             document.getElementById('product-view').innerHTML = html || '<div style="text-align:center;padding:50px;">No Results</div>';
         }
@@ -215,28 +140,20 @@ function parseData(rawData) {
         function showProducts(cat, index) { hideAll(); currentCategory = cat; document.getElementById('product-view').style.display = 'block'; var activeTab = document.getElementById('tab-' + index); if (activeTab) activeTab.classList.add('active'); renderList(nurseryData[cat], cat); document.getElementById('content-container').scrollTo(0, 0); }
         function hideAll() { document.getElementById('home-page').style.display = 'none'; document.getElementById('product-view').style.display = 'none'; var tabs = document.getElementsByClassName('tab-item'); for (var i=0; i<tabs.length; i++) tabs[i].classList.remove('active'); }
 
-function handleSearch() {
-    var q = document.getElementById('search-bar').value.toLowerCase();
-    if (q === "") { 
-        if (currentCategory === "home") showHome(); 
-        else { var cats = Object.keys(nurseryData).sort(); var idx = cats.indexOf(currentCategory); showProducts(currentCategory, idx); }
-        return; 
-    }
-    hideAll(); 
-    document.getElementById('product-view').style.display = 'block';
-    var results = [];
-    for (var cat in nurseryData) { 
-        for (var i = 0; i < nurseryData[cat].length; i++) { 
-            var item = nurseryData[cat][i];
-            // NEW: Search both the Name AND the Tags
-            if (item.name.toLowerCase().indexOf(q) !== -1 || item.tags.toLowerCase().indexOf(q) !== -1) { 
-                results.push(item); 
-            } 
-        } 
-    }
-    results.sort((a, b) => a.name.localeCompare(b.name));
-    renderList(results, "");
-}
+        function handleSearch() {
+            var q = document.getElementById('search-bar').value.toLowerCase();
+            if (q === "") { if (currentCategory === "home") showHome(); else { var cats = Object.keys(nurseryData).sort(); var idx = cats.indexOf(currentCategory); showProducts(currentCategory, idx); } return; }
+            hideAll(); document.getElementById('product-view').style.display = 'block';
+            var results = [];
+            for (var cat in nurseryData) { 
+                for (var i = 0; i < nurseryData[cat].length; i++) { 
+                    var item = nurseryData[cat][i];
+                    if (item.name.toLowerCase().indexOf(q) !== -1 || item.tags.toLowerCase().indexOf(q) !== -1) results.push(item); 
+                } 
+            }
+            results.sort((a, b) => a.name.localeCompare(b.name));
+            renderList(results, "");
+        }
 
         function findCatOfProduct(name) { for (var cat in nurseryData) { for (var i=0; i<nurseryData[cat].length; i++) { if (nurseryData[cat][i].name === name) return cat; } } return ""; }
 
