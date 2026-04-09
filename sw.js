@@ -1,4 +1,4 @@
-const cacheName = 'old-forge-v10'; // VERSION NUMBER (Should match version in index.html)
+const cacheName = 'old-forge-v11'; // VERSION NUMBER (Should match version in index.html)
 const assets = [
   './',
   './index.html',
