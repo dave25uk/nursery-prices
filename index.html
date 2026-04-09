@@ -211,19 +211,28 @@ function parseData(rawData) {
         function showProducts(cat, index) { hideAll(); currentCategory = cat; document.getElementById('product-view').style.display = 'block'; var activeTab = document.getElementById('tab-' + index); if (activeTab) activeTab.classList.add('active'); renderList(nurseryData[cat], cat); document.getElementById('content-container').scrollTo(0, 0); }
         function hideAll() { document.getElementById('home-page').style.display = 'none'; document.getElementById('product-view').style.display = 'none'; var tabs = document.getElementsByClassName('tab-item'); for (var i=0; i<tabs.length; i++) tabs[i].classList.remove('active'); }
 
-        function handleSearch() {
-            var q = document.getElementById('search-bar').value.toLowerCase();
-            if (q === "") { 
-                if (currentCategory === "home") showHome(); 
-                else { var cats = Object.keys(nurseryData).sort(); var idx = cats.indexOf(currentCategory); showProducts(currentCategory, idx); }
-                return; 
-            }
-            hideAll(); document.getElementById('product-view').style.display = 'block';
-            var results = [];
-            for (var cat in nurseryData) { for (var i = 0; i < nurseryData[cat].length; i++) { if (nurseryData[cat][i].name.toLowerCase().indexOf(q) !== -1) results.push(nurseryData[cat][i]); } }
-            results.sort((a, b) => a.name.localeCompare(b.name));
-            renderList(results, "");
-        }
+function handleSearch() {
+    var q = document.getElementById('search-bar').value.toLowerCase();
+    if (q === "") { 
+        if (currentCategory === "home") showHome(); 
+        else { var cats = Object.keys(nurseryData).sort(); var idx = cats.indexOf(currentCategory); showProducts(currentCategory, idx); }
+        return; 
+    }
+    hideAll(); 
+    document.getElementById('product-view').style.display = 'block';
+    var results = [];
+    for (var cat in nurseryData) { 
+        for (var i = 0; i < nurseryData[cat].length; i++) { 
+            var item = nurseryData[cat][i];
+            // NEW: Search both the Name AND the Tags
+            if (item.name.toLowerCase().indexOf(q) !== -1 || item.tags.toLowerCase().indexOf(q) !== -1) { 
+                results.push(item); 
+            } 
+        } 
+    }
+    results.sort((a, b) => a.name.localeCompare(b.name));
+    renderList(results, "");
+}
 
         function findCatOfProduct(name) { for (var cat in nurseryData) { for (var i=0; i<nurseryData[cat].length; i++) { if (nurseryData[cat][i].name === name) return cat; } } return ""; }
 
