@@ -54,110 +54,44 @@
         </div>
     </div>
     <script>
-        var nurseryData = {};
-        var currentCategory = "home";
-        var defaultData = "Category,Product Name,Price,Offer,Tags\nInstructions,Please upload prices.csv to GitHub,£0,,";
+    var APP_VERSION = "v9"; // Update this single line to change the home screen text
+    var nurseryData = {};
+    var currentCategory = "home";
+    var defaultData = "Category,Product Name,Price,Offer,Tags\nInstructions,Please upload prices.csv to GitHub,£0,,";
 
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
 
-        function getThemeClass(cat) {
-            var c = cat.toLowerCase();
-            if (c.indexOf('compost') !== -1) return 'theme-compost';
-            if (c.indexOf('perennial') !== -1) return 'theme-perennials';
-            if (c.indexOf('shrub') !== -1) return 'theme-shrubs';
-            if (c.indexOf('bedding') !== -1) return 'theme-bedding';
-            if (c.indexOf('stone') !== -1 || c.indexOf('sand') !== -1) return 'theme-stone';
-            if (c.indexOf('veg') !== -1) return 'theme-veg';
-            return '';
-        }
+    // ... (getThemeClass, sanitizeEncoding, parseData functions remain the same) ...
 
-        function sanitizeEncoding(str) { return str.replace(/\uFFFD/g, '£').replace(/\u00C2\u00A3/g, '£').replace(/\u00A3/g, '£'); }
+    async function init() {
+        // Set the version number on the home screen immediately
+        document.getElementById('app-v-num').innerText = APP_VERSION;
 
-        function parseData(rawData) {
-            var cleanData = sanitizeEncoding(rawData);
-            var lines = cleanData.trim().split('\n');
-            nurseryData = {};
-            for (var i = 1; i < lines.length; i++) {
-                var cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cols.length >= 3) {
-                    var cat = cols[0].trim().replace(/^"|"$/g, '');
-                    var name = cols[1].trim().replace(/^"|"$/g, '');
-                    var price = cols[2].trim().replace(/^"|"$/g, '');
-                    var offer = cols[3] ? cols[3].trim().replace(/^"|"$/g, '') : "";
-                    var tags = cols[4] ? cols[4].trim().replace(/^"|"$/g, '') : "";
-                    if (!nurseryData[cat]) nurseryData[cat] = [];
-                    nurseryData[cat].push({ name: name, price: price, offer: offer, tags: tags });
+        let dataToUse = defaultData;
+        try {
+            const cacheBuster = '?v=' + new Date().getTime();
+            const response = await fetch('prices.csv' + cacheBuster); 
+            if (response.ok) {
+                const remoteData = await response.text();
+                if (remoteData && remoteData.length > 50) {
+                    localStorage.setItem('forge_nursery_data', remoteData);
+                    dataToUse = remoteData;
+                    const lastMod = response.headers.get('Last-Modified');
+                    if (lastMod) document.getElementById('last-update').innerText = new Date(lastMod).toLocaleDateString('en-GB');
                 }
             }
-            for (var cat in nurseryData) { nurseryData[cat].sort((a, b) => a.name.localeCompare(b.name)); }
+        } catch (e) { 
+            dataToUse = localStorage.getItem('forge_nursery_data') || defaultData;
+            document.getElementById('last-update').innerText = "Offline Cache";
         }
+        parseData(dataToUse);
+        renderTabs();
+        showHome();
+    }
+    
+    // ... (rest of your functions: renderTabs, renderList, showHome, showProducts, hideAll, handleSearch, findCatOfProduct) ...
 
-        async function init() {
-            let dataToUse = defaultData;
-            try {
-                const cacheBuster = '?v=' + new Date().getTime();
-                const response = await fetch('prices.csv' + cacheBuster); 
-                if (response.ok) {
-                    const remoteData = await response.text();
-                    if (remoteData && remoteData.length > 50) {
-                        localStorage.setItem('forge_nursery_data', remoteData);
-                        dataToUse = remoteData;
-                        const lastMod = response.headers.get('Last-Modified');
-                        if (lastMod) document.getElementById('last-update').innerText = new Date(lastMod).toLocaleDateString('en-GB');
-                    }
-                }
-            } catch (e) { 
-                dataToUse = localStorage.getItem('forge_nursery_data') || defaultData;
-                document.getElementById('last-update').innerText = "Offline Cache";
-            }
-            parseData(dataToUse);
-            renderTabs();
-            showHome();
-        }
-
-        function renderTabs() {
-            var categories = Object.keys(nurseryData).sort(); 
-            var tabHtml = '<div class="tab-item" id="tab-home" onclick="showHome()">HOME</div>';
-            for (var i = 0; i < categories.length; i++) {
-                tabHtml += '<div class="tab-item" id="tab-' + i + '" onclick="showProducts(\'' + categories[i] + '\', ' + i + ')">' + categories[i] + '</div>';
-            }
-            document.getElementById('tab-bar').innerHTML = tabHtml;
-        }
-
-        function renderList(products, catName) {
-            var theme = getThemeClass(catName || "");
-            var html = '';
-            for (var i = 0; i < products.length; i++) {
-                var itemTheme = catName ? theme : getThemeClass(findCatOfProduct(products[i].name));
-                var offerClass = products[i].offer ? 'prod-offer-col' : 'prod-offer-col hidden-offer';
-                var offerText = products[i].offer ? 'OFFER: ' + products[i].offer : '';
-                html += '<div class="product-item ' + itemTheme + '"><div class="prod-row"><div class="prod-name">' + products[i].name + '</div><div class="prod-price">' + products[i].price + '</div><div class="' + offerClass + '">' + offerText + '</div></div></div>';
-            }
-            document.getElementById('product-view').innerHTML = html || '<div style="text-align:center;padding:50px;">No Results</div>';
-        }
-
-        function showHome() { hideAll(); currentCategory = "home"; document.getElementById('home-page').style.display = 'flex'; document.getElementById('tab-home').classList.add('active'); }
-        function showProducts(cat, index) { hideAll(); currentCategory = cat; document.getElementById('product-view').style.display = 'block'; var activeTab = document.getElementById('tab-' + index); if (activeTab) activeTab.classList.add('active'); renderList(nurseryData[cat], cat); document.getElementById('content-container').scrollTo(0, 0); }
-        function hideAll() { document.getElementById('home-page').style.display = 'none'; document.getElementById('product-view').style.display = 'none'; var tabs = document.getElementsByClassName('tab-item'); for (var i=0; i<tabs.length; i++) tabs[i].classList.remove('active'); }
-
-        function handleSearch() {
-            var q = document.getElementById('search-bar').value.toLowerCase();
-            if (q === "") { if (currentCategory === "home") showHome(); else { var cats = Object.keys(nurseryData).sort(); var idx = cats.indexOf(currentCategory); showProducts(currentCategory, idx); } return; }
-            hideAll(); document.getElementById('product-view').style.display = 'block';
-            var results = [];
-            for (var cat in nurseryData) { 
-                for (var i = 0; i < nurseryData[cat].length; i++) { 
-                    var item = nurseryData[cat][i];
-                    if (item.name.toLowerCase().indexOf(q) !== -1 || item.tags.toLowerCase().indexOf(q) !== -1) results.push(item); 
-                } 
-            }
-            results.sort((a, b) => a.name.localeCompare(b.name));
-            renderList(results, "");
-        }
-
-        function findCatOfProduct(name) { for (var cat in nurseryData) { for (var i=0; i<nurseryData[cat].length; i++) { if (nurseryData[cat][i].name === name) return cat; } } return ""; }
-
-        init();
-    </script>
+    init();
+</script>
 </body>
 </html>
