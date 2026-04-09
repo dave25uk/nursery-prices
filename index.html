@@ -28,7 +28,11 @@
         #az-strip { position: absolute; right: 5px; top: 15px; bottom: 15px; display: none; flex-direction: column; justify-content: space-between; width: 30px; background: rgba(255,255,255,0.8); border-radius: 15px; padding: 10px 0; font-size: 11px; font-weight: bold; color: var(--primary); text-align: center; border: 1px solid #ccc; z-index: 50; }
         .az-letter { cursor: pointer; padding: 2px 0; }
 
-        .product-item { background: var(--card-bg); padding: 10px 15px; margin-bottom: 8px; border: 2px solid var(--border); border-radius: 8px; border-left: 12px solid var(--accent); }
+        /* Updated Product Box Shading */
+        .product-item { background: var(--card-bg); padding: 10px 15px; margin-bottom: 8px; border: 2px solid var(--border); border-radius: 8px; border-left: 12px solid var(--accent); transition: background-color 0.2s; }
+        .bg-low { background-color: #fff4e5; } /* Subtle Orange Tint */
+        .bg-out { background-color: #ffebee; } /* Subtle Red Tint */
+
         .prod-row { display: flex; align-items: center; gap: 15px; }
         .prod-name-box { flex: 2; display: flex; flex-direction: column; }
         .prod-name { font-size: 1.2em; font-weight: bold; }
@@ -63,14 +67,14 @@
                 <img src="logo.png" alt="Logo" style="max-width: 400px; width: 60%; height: auto;">
                 <div style="font-size: 1.5em; font-weight: 600; color: var(--primary); margin-top: 10px;">Price List 2026</div>
                 <div style="margin-top: 20px; font-size: 0.75em; color: #888; font-weight: bold; border-top: 1px solid #ddd; padding-top: 10px;">
-                    App Version: <span id="app-v-num">v11.1</span> | Updated: <span id="last-update">...</span>
+                    App Version: <span id="app-v-num">v11.2</span> | Updated: <span id="last-update">...</span>
                 </div>
             </div>
             <div id="product-view" style="display: none;"></div>
         </div>
     </div>
     <script>
-        var APP_VERSION = "v11.1";
+        var APP_VERSION = "v11.2";
         var nurseryData = {};
         var currentCategory = "home";
 
@@ -111,36 +115,20 @@
 
         async function init() {
             document.getElementById('app-v-num').innerText = APP_VERSION;
-            
-            // 1. Try to load from LocalStorage first for instant startup
             let cachedData = localStorage.getItem('forge_nursery_data');
-            if (cachedData) {
-                parseData(cachedData);
-                renderTabs();
-                showHome();
-            }
+            if (cachedData) { parseData(cachedData); renderTabs(); showHome(); }
 
-            // 2. Immediately try to fetch fresh data from the internet
             try {
-                // cache: "no-store" forces the browser to bypass the cache and check GitHub
                 const res = await fetch('prices.csv', { cache: "no-store" });
                 if (res.ok) {
                     const freshData = await res.text();
                     localStorage.setItem('forge_nursery_data', freshData);
                     const lastMod = res.headers.get('Last-Modified');
                     if (lastMod) document.getElementById('last-update').innerText = new Date(lastMod).toLocaleDateString('en-GB');
-                    
-                    // Re-parse and refresh the view with the fresh data
-                    parseData(freshData);
-                    renderTabs();
-                    if (currentCategory === "home") showHome();
-                    else handleSearch(); // Refresh search if user was searching
+                    parseData(freshData); renderTabs();
+                    if (currentCategory === "home") showHome(); else handleSearch();
                 }
-            } catch (e) {
-                console.log("Offline or GitHub unreachable. Using cached data.");
-                document.getElementById('last-update').innerText = "Offline Cache";
-            }
-            
+            } catch (e) { document.getElementById('last-update').innerText = "Offline Cache"; }
             renderAZStrip();
         }
 
@@ -169,10 +157,10 @@
         }
 
         function renderList(products, catName) {
-            let theme = getThemeClass(catName || "");
             let html = products.map(p => {
                 let s = p.stock.toLowerCase();
                 let sClass = s.includes('out') ? 'stock-out' : s.includes('low') ? 'stock-low' : '';
+                let bgClass = s.includes('out') ? 'bg-out' : s.includes('low') ? 'bg-low' : '';
                 let oClass = p.offer ? 'prod-offer-col' : 'prod-offer-col hidden-offer';
                 
                 let statusHtml = '';
@@ -183,7 +171,9 @@
                     </div>`;
                 }
 
-                return `<div class="product-item ${catName ? theme : getThemeClass(findCat(p.name))}">
+                let itemTheme = catName ? getThemeClass(catName) : getThemeClass(findCat(p.name));
+
+                return `<div class="product-item ${itemTheme} ${bgClass}">
                     <div class="prod-row">
                         <div class="prod-name-box">
                             <div class="prod-name">${p.name}</div>
@@ -202,11 +192,7 @@
         function handleSearch() {
             let q = document.getElementById('search-bar').value.toLowerCase();
             document.getElementById('clear-btn').style.display = q ? 'block' : 'none';
-            if (!q) { 
-                if (currentCategory === "home") showHome(); 
-                else showProducts(currentCategory, Object.keys(nurseryData).sort().indexOf(currentCategory)); 
-                return; 
-            }
+            if (!q) { if (currentCategory === "home") showHome(); else showProducts(currentCategory, Object.keys(nurseryData).sort().indexOf(currentCategory)); return; }
             hideAll(); document.getElementById('product-view').style.display = 'block';
             document.getElementById('az-strip').style.display = 'flex';
             let res = [];
