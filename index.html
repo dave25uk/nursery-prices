@@ -33,7 +33,6 @@
         .prod-name-box { flex: 2; display: flex; flex-direction: column; }
         .prod-name { font-size: 1.2em; font-weight: bold; }
         
-        /* Status Row for Stock + Comments */
         .status-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
         .stock-label { font-size: 0.75em; font-weight: 800; text-transform: uppercase; color: #666; }
         .stock-low { color: #d35400; }
@@ -64,14 +63,14 @@
                 <img src="logo.png" alt="Logo" style="max-width: 400px; width: 60%; height: auto;">
                 <div style="font-size: 1.5em; font-weight: 600; color: var(--primary); margin-top: 10px;">Price List 2026</div>
                 <div style="margin-top: 20px; font-size: 0.75em; color: #888; font-weight: bold; border-top: 1px solid #ddd; padding-top: 10px;">
-                    App Version: <span id="app-v-num">v11</span> | Updated: <span id="last-update">...</span>
+                    App Version: <span id="app-v-num">v11.1</span> | Updated: <span id="last-update">...</span>
                 </div>
             </div>
             <div id="product-view" style="display: none;"></div>
         </div>
     </div>
     <script>
-        var APP_VERSION = "v11";
+        var APP_VERSION = "v11.1";
         var nurseryData = {};
         var currentCategory = "home";
 
@@ -89,6 +88,7 @@
         }
 
         function parseData(rawData) {
+            if (!rawData) return;
             let lines = rawData.replace(/\uFFFD/g, '£').trim().split('\n');
             nurseryData = {};
             for (let i = 1; i < lines.length; i++) {
@@ -111,20 +111,37 @@
 
         async function init() {
             document.getElementById('app-v-num').innerText = APP_VERSION;
+            
+            // 1. Try to load from LocalStorage first for instant startup
+            let cachedData = localStorage.getItem('forge_nursery_data');
+            if (cachedData) {
+                parseData(cachedData);
+                renderTabs();
+                showHome();
+            }
+
+            // 2. Immediately try to fetch fresh data from the internet
             try {
-                const res = await fetch('prices.csv?v=' + Date.now());
+                // cache: "no-store" forces the browser to bypass the cache and check GitHub
+                const res = await fetch('prices.csv', { cache: "no-store" });
                 if (res.ok) {
-                    const data = await res.text();
-                    localStorage.setItem('forge_nursery_data', data);
+                    const freshData = await res.text();
+                    localStorage.setItem('forge_nursery_data', freshData);
                     const lastMod = res.headers.get('Last-Modified');
                     if (lastMod) document.getElementById('last-update').innerText = new Date(lastMod).toLocaleDateString('en-GB');
-                    parseData(data);
+                    
+                    // Re-parse and refresh the view with the fresh data
+                    parseData(freshData);
+                    renderTabs();
+                    if (currentCategory === "home") showHome();
+                    else handleSearch(); // Refresh search if user was searching
                 }
             } catch (e) {
-                parseData(localStorage.getItem('forge_nursery_data') || "");
+                console.log("Offline or GitHub unreachable. Using cached data.");
                 document.getElementById('last-update').innerText = "Offline Cache";
             }
-            renderTabs(); renderAZStrip(); showHome();
+            
+            renderAZStrip();
         }
 
         function renderAZStrip() {
@@ -144,7 +161,10 @@
         function renderTabs() {
             let cats = Object.keys(nurseryData).sort();
             let html = '<div class="tab-item" id="tab-home" onclick="showHome()">HOME</div>';
-            cats.forEach((cat, i) => html += `<div class="tab-item" id="tab-${i}" onclick="showProducts('${cat}', ${i})">${cat}</div>`);
+            cats.forEach((cat, i) => {
+                let activeClass = (currentCategory === cat) ? 'active' : '';
+                html += `<div class="tab-item ${activeClass}" id="tab-${i}" onclick="showProducts('${cat}', ${i})">${cat}</div>`;
+            });
             document.getElementById('tab-bar').innerHTML = html;
         }
 
@@ -155,7 +175,6 @@
                 let sClass = s.includes('out') ? 'stock-out' : s.includes('low') ? 'stock-low' : '';
                 let oClass = p.offer ? 'prod-offer-col' : 'prod-offer-col hidden-offer';
                 
-                // Only show the status row if there is stock or a comment
                 let statusHtml = '';
                 if (p.stock || p.comment) {
                     statusHtml = `<div class="status-row">
@@ -183,7 +202,11 @@
         function handleSearch() {
             let q = document.getElementById('search-bar').value.toLowerCase();
             document.getElementById('clear-btn').style.display = q ? 'block' : 'none';
-            if (!q) { if (currentCategory === "home") showHome(); else showProducts(currentCategory, Object.keys(nurseryData).sort().indexOf(currentCategory)); return; }
+            if (!q) { 
+                if (currentCategory === "home") showHome(); 
+                else showProducts(currentCategory, Object.keys(nurseryData).sort().indexOf(currentCategory)); 
+                return; 
+            }
             hideAll(); document.getElementById('product-view').style.display = 'block';
             document.getElementById('az-strip').style.display = 'flex';
             let res = [];
