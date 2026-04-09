@@ -25,23 +25,21 @@
         .content-area { flex: 1; overflow-y: auto; padding: 15px 45px 15px 15px; scroll-behavior: smooth; }
         #home-page { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 50vh; text-align: center; }
 
-        /* A-Z Quick Scroll Strip */
-        #az-strip { 
-            position: absolute; right: 5px; top: 15px; bottom: 15px; 
-            display: none; flex-direction: column; justify-content: space-between; 
-            width: 30px; background: rgba(255,255,255,0.8); border-radius: 15px; 
-            padding: 10px 0; font-size: 11px; font-weight: bold; color: var(--primary); 
-            text-align: center; border: 1px solid #ccc; z-index: 50;
-        }
-        .az-letter { cursor: pointer; padding: 2px 0; -webkit-tap-highlight-color: transparent; }
+        #az-strip { position: absolute; right: 5px; top: 15px; bottom: 15px; display: none; flex-direction: column; justify-content: space-between; width: 30px; background: rgba(255,255,255,0.8); border-radius: 15px; padding: 10px 0; font-size: 11px; font-weight: bold; color: var(--primary); text-align: center; border: 1px solid #ccc; z-index: 50; }
+        .az-letter { cursor: pointer; padding: 2px 0; }
 
         .product-item { background: var(--card-bg); padding: 10px 15px; margin-bottom: 8px; border: 2px solid var(--border); border-radius: 8px; border-left: 12px solid var(--accent); }
         .prod-row { display: flex; align-items: center; gap: 15px; }
         .prod-name-box { flex: 2; display: flex; flex-direction: column; }
         .prod-name { font-size: 1.2em; font-weight: bold; }
-        .stock-label { font-size: 0.75em; font-weight: 800; text-transform: uppercase; margin-top: 2px; color: #666; }
+        
+        /* Status Row for Stock + Comments */
+        .status-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+        .stock-label { font-size: 0.75em; font-weight: 800; text-transform: uppercase; color: #666; }
         .stock-low { color: #d35400; }
         .stock-out { color: #c62828; text-decoration: line-through; }
+        .comment-label { font-size: 0.75em; font-weight: 600; font-style: italic; color: #555; border-left: 1px solid #ccc; padding-left: 8px; }
+
         .prod-price { flex: 0 0 85px; background: var(--accent); color: white; padding: 8px; border-radius: 6px; font-weight: 800; text-align: center; font-size: 1.1em; }
         .prod-offer-col { flex: 1.5; font-size: 0.9em; font-weight: bold; color: #d35400; background: #fff3e0; padding: 5px 10px; border-radius: 6px; border: 1px solid #ffe0b2; text-align: center; }
         .hidden-offer { visibility: hidden; }
@@ -60,22 +58,20 @@
     </div>
     <div class="main-layout">
         <div class="tab-bar" id="tab-bar"></div>
-        
         <div id="az-strip"></div>
-
         <div class="content-area" id="content-container">
             <div id="home-page">
                 <img src="logo.png" alt="Logo" style="max-width: 400px; width: 60%; height: auto;">
                 <div style="font-size: 1.5em; font-weight: 600; color: var(--primary); margin-top: 10px;">Price List 2026</div>
                 <div style="margin-top: 20px; font-size: 0.75em; color: #888; font-weight: bold; border-top: 1px solid #ddd; padding-top: 10px;">
-                    App Version: <span id="app-v-num">v10</span> | Updated: <span id="last-update">...</span>
+                    App Version: <span id="app-v-num">v11</span> | Updated: <span id="last-update">...</span>
                 </div>
             </div>
             <div id="product-view" style="display: none;"></div>
         </div>
     </div>
     <script>
-        var APP_VERSION = "v10";
+        var APP_VERSION = "v11";
         var nurseryData = {};
         var currentCategory = "home";
 
@@ -105,7 +101,8 @@
                         price: cols[2].trim().replace(/^"|"$/g, ''),
                         offer: cols[3] ? cols[3].trim().replace(/^"|"$/g, '') : "",
                         tags: cols[4] ? cols[4].trim().replace(/^"|"$/g, '') : "",
-                        stock: cols[5] ? cols[5].trim().replace(/^"|"$/g, '') : ""
+                        stock: cols[5] ? cols[5].trim().replace(/^"|"$/g, '') : "",
+                        comment: cols[6] ? cols[6].trim().replace(/^"|"$/g, '') : ""
                     });
                 }
             }
@@ -140,10 +137,7 @@
             const items = document.querySelectorAll('.product-item');
             for (let item of items) {
                 const name = item.querySelector('.prod-name').innerText.trim().toUpperCase();
-                if (name.startsWith(letter)) {
-                    item.scrollIntoView();
-                    break;
-                }
+                if (name.startsWith(letter)) { item.scrollIntoView(); break; }
             }
         }
 
@@ -160,11 +154,21 @@
                 let s = p.stock.toLowerCase();
                 let sClass = s.includes('out') ? 'stock-out' : s.includes('low') ? 'stock-low' : '';
                 let oClass = p.offer ? 'prod-offer-col' : 'prod-offer-col hidden-offer';
+                
+                // Only show the status row if there is stock or a comment
+                let statusHtml = '';
+                if (p.stock || p.comment) {
+                    statusHtml = `<div class="status-row">
+                        ${p.stock ? `<div class="stock-label ${sClass}">${p.stock}</div>` : ''}
+                        ${p.comment ? `<div class="comment-label" style="${!p.stock ? 'border:none;padding:0' : ''}">${p.comment}</div>` : ''}
+                    </div>`;
+                }
+
                 return `<div class="product-item ${catName ? theme : getThemeClass(findCat(p.name))}">
                     <div class="prod-row">
                         <div class="prod-name-box">
                             <div class="prod-name">${p.name}</div>
-                            ${p.stock ? `<div class="stock-label ${sClass}">${p.stock}</div>` : ''}
+                            ${statusHtml}
                         </div>
                         <div class="prod-price">${p.price}</div>
                         <div class="${oClass}">${p.offer ? 'OFFER: '+p.offer : ''}</div>
@@ -181,7 +185,7 @@
             document.getElementById('clear-btn').style.display = q ? 'block' : 'none';
             if (!q) { if (currentCategory === "home") showHome(); else showProducts(currentCategory, Object.keys(nurseryData).sort().indexOf(currentCategory)); return; }
             hideAll(); document.getElementById('product-view').style.display = 'block';
-            document.getElementById('az-strip').style.display = 'flex'; // Keep A-Z visible for search results
+            document.getElementById('az-strip').style.display = 'flex';
             let res = [];
             for (let cat in nurseryData) {
                 nurseryData[cat].forEach(item => {
