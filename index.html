@@ -133,4 +133,33 @@
                 var itemTheme = catName ? theme : getThemeClass(findCatOfProduct(products[i].name));
                 var offerClass = products[i].offer ? 'prod-offer-col' : 'prod-offer-col hidden-offer';
                 var offerText = products[i].offer ? 'OFFER: ' + products[i].offer : '';
-                html += '<div class="product-item ' + itemTheme + '"><div class="prod-row"><div class="prod-name">' + products[i].name + '</div><div class="prod-price">' + products[i].price +
+                html += '<div class="product-item ' + itemTheme + '"><div class="prod-row"><div class="prod-name">' + products[i].name + '</div><div class="prod-price">' + products[i].price + '</div><div class="' + offerClass + '">' + offerText + '</div></div></div>';
+            }
+            document.getElementById('product-view').innerHTML = html || '<div style="text-align:center;padding:50px;">No Results</div>';
+        }
+
+        function showHome() { hideAll(); currentCategory = "home"; document.getElementById('home-page').style.display = 'flex'; document.getElementById('tab-home').classList.add('active'); }
+        function showProducts(cat, index) { hideAll(); currentCategory = cat; document.getElementById('product-view').style.display = 'block'; var activeTab = document.getElementById('tab-' + index); if (activeTab) activeTab.classList.add('active'); renderList(nurseryData[cat], cat); document.getElementById('content-container').scrollTo(0, 0); }
+        function hideAll() { document.getElementById('home-page').style.display = 'none'; document.getElementById('product-view').style.display = 'none'; var tabs = document.getElementsByClassName('tab-item'); for (var i=0; i<tabs.length; i++) tabs[i].classList.remove('active'); }
+
+        function handleSearch() {
+            var q = document.getElementById('search-bar').value.toLowerCase();
+            if (q === "") { if (currentCategory === "home") showHome(); else { var cats = Object.keys(nurseryData).sort(); var idx = cats.indexOf(currentCategory); showProducts(currentCategory, idx); } return; }
+            hideAll(); document.getElementById('product-view').style.display = 'block';
+            var results = [];
+            for (var cat in nurseryData) { 
+                for (var i = 0; i < nurseryData[cat].length; i++) { 
+                    var item = nurseryData[cat][i];
+                    if (item.name.toLowerCase().indexOf(q) !== -1 || item.tags.toLowerCase().indexOf(q) !== -1) results.push(item); 
+                } 
+            }
+            results.sort((a, b) => a.name.localeCompare(b.name));
+            renderList(results, "");
+        }
+
+        function findCatOfProduct(name) { for (var cat in nurseryData) { for (var i=0; i<nurseryData[cat].length; i++) { if (nurseryData[cat][i].name === name) return cat; } } return ""; }
+
+        init();
+    </script>
+</body>
+</html>
