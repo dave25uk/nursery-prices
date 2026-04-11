@@ -56,6 +56,14 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 12px;
+	height: 100%;
+}
+
+.sidebar-nav-links {
+    flex-grow: 1; /* Pushes the management button down */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .nav-btn {
@@ -135,4 +143,18 @@ body, html {
     justify-content: space-around; align-items: center;
     background: rgba(255,255,255,0.9); border-radius: 20px;
     border: 1px solid #ddd; font-weight: 800; color: var(--nursery-green); font-size: 13px;
+}
+
+.mgmt-btn {
+    margin-top: auto;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px dashed #ccc;
+    border-radius: 12px;
+    color: #888;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    text-transform: uppercase;
 }

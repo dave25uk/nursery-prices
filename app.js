@@ -7,6 +7,14 @@ const app = {
     categories: [],
     currentView: 'home',
 	lastUpdated: '', // New variable to store the date
+	openManagement() {
+        const pin = prompt("Enter Management PIN:");
+        if (pin === "123456") {
+            window.location.href = "management.html";
+        } else if (pin !== null) {
+            alert("Incorrect PIN.");
+        }
+    },
 
  async init() {
         const cache = localStorage.getItem('nursery_data');
