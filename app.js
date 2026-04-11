@@ -7,14 +7,24 @@ const app = {
     categories: [],
     currentView: 'home',
 	lastUpdated: '', // New variable to store the date
-	openManagement() {
-        const pin = prompt("Enter Management PIN:");
-        if (pin === "123456") {
-            window.location.href = "management.html";
-        } else if (pin !== null) {
-            alert("Incorrect PIN.");
-        }
-    },
+openManagement() {
+    // Instead of prompt, we show our custom modal
+    const modal = document.getElementById('pin-modal');
+    const field = document.getElementById('pin-field');
+    field.value = ''; // Clear previous attempt
+    modal.style.display = 'flex';
+    field.focus(); // Auto-focus so the numeric keypad pops up immediately
+},
+
+verifyPin() {
+    const pin = document.getElementById('pin-field').value;
+    if (pin === "123456") {
+        window.location.href = "management.html";
+    } else {
+        alert("Incorrect PIN.");
+        document.getElementById('pin-field').value = '';
+    }
+}
 
  async init() {
         const cache = localStorage.getItem('nursery_data');

@@ -45,5 +45,16 @@
         });
     }
 </script>
+<div id="pin-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; padding:30px; border-radius:15px; text-align:center; width:80%; max-width:300px;">
+        <h3 style="margin-top:0;">Management Login</h3>
+        <input type="password" id="pin-field" inputmode="numeric" pattern="[0-9]*" placeholder="Enter PIN" 
+               style="width:100%; padding:15px; font-size:24px; text-align:center; border:2px solid #ccc; border-radius:10px; margin-bottom:15px;">
+        <div style="display:flex; gap:10px;">
+            <button onclick="document.getElementById('pin-modal').style.display='none'" style="flex:1; padding:10px; border:none; border-radius:5px;">Cancel</button>
+            <button onclick="app.verifyPin()" style="flex:1; padding:10px; border:none; border-radius:5px; background:var(--nursery-green); color:white; font-weight:bold;">Login</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
