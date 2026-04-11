@@ -3,213 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>The Old Forge Nursery</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>The Old Forge Nursery - Price List 2026</title>
-    <style>
-        :root { --primary: #2e7d32; --bg: #f4f4f4; --text: #222; --card-bg: #ffffff; --border: #444; --tab-bg: #ffffff; --accent: var(--primary); }
-        body { font-family: -apple-system, Helvetica, Arial, sans-serif; background: var(--bg); margin: 0; padding: 0; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-        
-        .header { background: var(--card-bg); padding: 8px 15px; border-bottom: 2px solid var(--border); z-index: 100; flex-shrink: 0; }
-        h1 { margin: 0 0 5px 0; font-size: 1em; color: var(--primary); text-transform: uppercase; text-align: center;}
-        .search-container { position: relative; width: 100%; }
-        #search-bar { width: 100%; padding: 12px 40px 12px 12px; font-size: 18px; border: 2px solid var(--border); border-radius: 8px; box-sizing: border-box; }
-        .clear-search { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 24px; color: #999; cursor: pointer; display: none; padding: 5px; }
-
-        .main-layout { display: flex; flex: 1; overflow: hidden; position: relative; }
-        .tab-bar { width: 220px; background: var(--tab-bg); border-right: 2px solid var(--border); display: flex; flex-direction: column; padding: 10px; overflow-y: auto; flex-shrink: 0; }
-        .tab-item { padding: 14px; margin-bottom: 6px; border-radius: 8px; font-weight: bold; font-size: 0.95em; border: 1px solid #bbb; background: #fff; cursor: pointer; }
-        .tab-item.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .content-area { flex: 1; overflow-y: auto; padding: 15px 45px 15px 15px; scroll-behavior: smooth; }
-        #home-page { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 50vh; text-align: center; }
-
-        #az-strip { position: absolute; right: 5px; top: 15px; bottom: 15px; display: none; flex-direction: column; justify-content: space-between; width: 30px; background: rgba(255,255,255,0.8); border-radius: 15px; padding: 10px 0; font-size: 11px; font-weight: bold; color: var(--primary); text-align: center; border: 1px solid #ccc; z-index: 50; }
-        .az-letter { cursor: pointer; padding: 2px 0; }
-
-        /* Updated Product Box Shading */
-        .product-item { background: var(--card-bg); padding: 10px 15px; margin-bottom: 8px; border: 2px solid var(--border); border-radius: 8px; border-left: 12px solid var(--accent); transition: background-color 0.2s; }
-        .bg-low { background-color: #fff4e5; } /* Subtle Orange Tint */
-        .bg-out { background-color: #ffebee; } /* Subtle Red Tint */
-
-        .prod-row { display: flex; align-items: center; gap: 15px; }
-        .prod-name-box { flex: 2; display: flex; flex-direction: column; }
-        .prod-name { font-size: 1.2em; font-weight: bold; }
-        
-        .status-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
-        .stock-label { font-size: 0.75em; font-weight: 800; text-transform: uppercase; color: #666; }
-        .stock-low { color: #d35400; }
-        .stock-out { color: #c62828; text-decoration: line-through; }
-        .comment-label { font-size: 0.75em; font-weight: 600; font-style: italic; color: #555; border-left: 1px solid #ccc; padding-left: 8px; }
-
-        .prod-price { flex: 0 0 85px; background: var(--accent); color: white; padding: 8px; border-radius: 6px; font-weight: 800; text-align: center; font-size: 1.1em; }
-        .prod-offer-col { flex: 1.5; font-size: 0.9em; font-weight: bold; color: #d35400; background: #fff3e0; padding: 5px 10px; border-radius: 6px; border: 1px solid #ffe0b2; text-align: center; }
-        .hidden-offer { visibility: hidden; }
-
-        .theme-compost { --accent: #795548; } .theme-perennials { --accent: #9c27b0; } .theme-shrubs { --accent: #2e7d32; }
-        .theme-bedding { --accent: #e91e63; } .theme-stone { --accent: #607d8b; } .theme-veg { --accent: #fbc02d; }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="header">
-        <h1>The Old Forge Nursery</h1>
-        <div class="search-container">
-            <input type="text" id="search-bar" placeholder="Search plants or tags..." oninput="handleSearch()">
-            <div id="clear-btn" class="clear-search" onclick="clearSearch()">×</div>
-        </div>
-    </div>
-    <div class="main-layout">
-        <div class="tab-bar" id="tab-bar"></div>
-        <div id="az-strip"></div>
-        <div class="content-area" id="content-container">
-            <div id="home-page">
-                <img src="logo.png" alt="Logo" style="max-width: 400px; width: 60%; height: auto;">
-                <div style="font-size: 1.5em; font-weight: 600; color: var(--primary); margin-top: 10px;">Price List 2026</div>
-                <div style="margin-top: 20px; font-size: 0.75em; color: #888; font-weight: bold; border-top: 1px solid #ddd; padding-top: 10px;">
-                    App Version: <span id="app-v-num">v11.2</span> | Updated: <span id="last-update">...</span>
-                </div>
+
+    <div class="app-container">
+        <header class="header">
+            <h1>The Old Forge Nursery</h1>
+            <div class="search-wrapper">
+                <input type="text" id="main-search" placeholder="Search plants or tags..." oninput="app.handleSearch()">
             </div>
-            <div id="product-view" style="display: none;"></div>
-        </div>
+        </header>
+
+        <aside class="sidebar" id="sidebar-nav">
+            </aside>
+
+        <main class="content" id="main-content">
+            </main>
     </div>
-    <script>
-        var APP_VERSION = "v11.2";
-        var nurseryData = {};
-        var currentCategory = "home";
 
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
+    <div class="az-rail" id="az-rail"></div>
 
-        function getThemeClass(cat) {
-            let c = cat.toLowerCase();
-            if (c.includes('compost')) return 'theme-compost';
-            if (c.includes('perennial')) return 'theme-perennials';
-            if (c.includes('shrub')) return 'theme-shrubs';
-            if (c.includes('bedding')) return 'theme-bedding';
-            if (c.includes('stone') || c.includes('sand')) return 'theme-stone';
-            if (c.includes('veg')) return 'theme-veg';
-            return '';
-        }
-
-        function parseData(rawData) {
-            if (!rawData) return;
-            let lines = rawData.replace(/\uFFFD/g, '£').trim().split('\n');
-            nurseryData = {};
-            for (let i = 1; i < lines.length; i++) {
-                let cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cols.length >= 3) {
-                    let cat = cols[0].trim().replace(/^"|"$/g, '');
-                    if (!nurseryData[cat]) nurseryData[cat] = [];
-                    nurseryData[cat].push({
-                        name: cols[1].trim().replace(/^"|"$/g, ''),
-                        price: cols[2].trim().replace(/^"|"$/g, ''),
-                        offer: cols[3] ? cols[3].trim().replace(/^"|"$/g, '') : "",
-                        tags: cols[4] ? cols[4].trim().replace(/^"|"$/g, '') : "",
-                        stock: cols[5] ? cols[5].trim().replace(/^"|"$/g, '') : "",
-                        comment: cols[6] ? cols[6].trim().replace(/^"|"$/g, '') : ""
-                    });
-                }
-            }
-            for (let cat in nurseryData) nurseryData[cat].sort((a, b) => a.name.localeCompare(b.name));
-        }
-
-        async function init() {
-            document.getElementById('app-v-num').innerText = APP_VERSION;
-            let cachedData = localStorage.getItem('forge_nursery_data');
-            if (cachedData) { parseData(cachedData); renderTabs(); showHome(); }
-
-            try {
-                const res = await fetch('prices.csv', { cache: "no-store" });
-                if (res.ok) {
-                    const freshData = await res.text();
-                    localStorage.setItem('forge_nursery_data', freshData);
-                    const lastMod = res.headers.get('Last-Modified');
-                    if (lastMod) document.getElementById('last-update').innerText = new Date(lastMod).toLocaleDateString('en-GB');
-                    parseData(freshData); renderTabs();
-                    if (currentCategory === "home") showHome(); else handleSearch();
-                }
-            } catch (e) { document.getElementById('last-update').innerText = "Offline Cache"; }
-            renderAZStrip();
-        }
-
-        function renderAZStrip() {
-            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-            let html = alphabet.map(l => `<div class="az-letter" onclick="jumpToLetter('${l}')">${l}</div>`).join("");
-            document.getElementById('az-strip').innerHTML = html;
-        }
-
-        function jumpToLetter(letter) {
-            const items = document.querySelectorAll('.product-item');
-            for (let item of items) {
-                const name = item.querySelector('.prod-name').innerText.trim().toUpperCase();
-                if (name.startsWith(letter)) { item.scrollIntoView(); break; }
-            }
-        }
-
-        function renderTabs() {
-            let cats = Object.keys(nurseryData).sort();
-            let html = '<div class="tab-item" id="tab-home" onclick="showHome()">HOME</div>';
-            cats.forEach((cat, i) => {
-                let activeClass = (currentCategory === cat) ? 'active' : '';
-                html += `<div class="tab-item ${activeClass}" id="tab-${i}" onclick="showProducts('${cat}', ${i})">${cat}</div>`;
-            });
-            document.getElementById('tab-bar').innerHTML = html;
-        }
-
-        function renderList(products, catName) {
-            let html = products.map(p => {
-                let s = p.stock.toLowerCase();
-                let sClass = s.includes('out') ? 'stock-out' : s.includes('low') ? 'stock-low' : '';
-                let bgClass = s.includes('out') ? 'bg-out' : s.includes('low') ? 'bg-low' : '';
-                let oClass = p.offer ? 'prod-offer-col' : 'prod-offer-col hidden-offer';
-                
-                let statusHtml = '';
-                if (p.stock || p.comment) {
-                    statusHtml = `<div class="status-row">
-                        ${p.stock ? `<div class="stock-label ${sClass}">${p.stock}</div>` : ''}
-                        ${p.comment ? `<div class="comment-label" style="${!p.stock ? 'border:none;padding:0' : ''}">${p.comment}</div>` : ''}
-                    </div>`;
-                }
-
-                let itemTheme = catName ? getThemeClass(catName) : getThemeClass(findCat(p.name));
-
-                return `<div class="product-item ${itemTheme} ${bgClass}">
-                    <div class="prod-row">
-                        <div class="prod-name-box">
-                            <div class="prod-name">${p.name}</div>
-                            ${statusHtml}
-                        </div>
-                        <div class="prod-price">${p.price}</div>
-                        <div class="${oClass}">${p.offer ? 'OFFER: '+p.offer : ''}</div>
-                    </div>
-                </div>`;
-            }).join('');
-            document.getElementById('product-view').innerHTML = html || '<div style="text-align:center;padding:50px;">No Results</div>';
-        }
-
-        function clearSearch() { document.getElementById('search-bar').value = ''; handleSearch(); showHome(); }
-
-        function handleSearch() {
-            let q = document.getElementById('search-bar').value.toLowerCase();
-            document.getElementById('clear-btn').style.display = q ? 'block' : 'none';
-            if (!q) { if (currentCategory === "home") showHome(); else showProducts(currentCategory, Object.keys(nurseryData).sort().indexOf(currentCategory)); return; }
-            hideAll(); document.getElementById('product-view').style.display = 'block';
-            document.getElementById('az-strip').style.display = 'flex';
-            let res = [];
-            for (let cat in nurseryData) {
-                nurseryData[cat].forEach(item => {
-                    if (item.name.toLowerCase().includes(q) || item.tags.toLowerCase().includes(q)) res.push(item);
-                });
-            }
-            renderList(res.sort((a,b) => a.name.localeCompare(b.name)), "");
-        }
-
-        function showHome() { hideAll(); currentCategory = "home"; document.getElementById('home-page').style.display = 'flex'; document.getElementById('tab-home').classList.add('active'); document.getElementById('az-strip').style.display = 'none'; }
-        function showProducts(cat, idx) { hideAll(); currentCategory = cat; document.getElementById('product-view').style.display = 'block'; document.getElementById('az-strip').style.display = 'flex'; if(document.getElementById('tab-'+idx)) document.getElementById('tab-'+idx).classList.add('active'); renderList(nurseryData[cat], cat); document.getElementById('content-container').scrollTo(0, 0); }
-        function hideAll() { document.getElementById('home-page').style.display = 'none'; document.getElementById('product-view').style.display = 'none'; Array.from(document.getElementsByClassName('tab-item')).forEach(t => t.classList.remove('active')); }
-        function findCat(name) { for (let cat in nurseryData) { if (nurseryData[cat].some(i => i.name === name)) return cat; } return ""; }
-
-        init();
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
