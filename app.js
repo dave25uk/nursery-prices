@@ -69,27 +69,41 @@ const app = {
         this.renderSidebar();
     },
 
-    renderList(products) {
-        const container = document.getElementById('main-content');
-        let html = '<div class="product-list">';
-        products.forEach(p => {
-            const s = (p.stock || "").toLowerCase();
-            const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
-            html += `
-                <div class="product-card ${bgClass}">
-                    <div class="prod-info">
+renderList(products) {
+    const container = document.getElementById('main-content');
+    let html = '<div class="product-list">';
+    
+    products.forEach(p => {
+        const s = (p.stock || "").toLowerCase();
+        const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
+        
+        // --- NEW LOGIC START ---
+        // This converts "Shrubs and Trees" into "cat-shrubs-and-trees" 
+        // to match the Task 1 CSS exactly.
+        const catClass = `cat-${(p.category || "none")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-') // Replace spaces/brackets with hyphens
+            .replace(/^-+|-+$/g, '')}`;  // Clean up ends
+        // --- NEW LOGIC END ---
+
+        html += `
+            <div class="product-card ${bgClass} ${catClass}">
+                <div class="prod-info">
+                    <div style="display: flex; align-items: baseline; gap: 15px;">
                         <div class="prod-name">${p.name}</div>
-                        <div class="status-line">
-                            ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
-                            ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
-                        </div>
+                        ${p.offer ? `<div style="color: #e65100; font-weight: 700; font-size: 16px;">${p.offer}</div>` : ''}
                     </div>
-                    <div class="prod-price">${p.price}</div>
-                </div>`;
-        });
-        container.innerHTML = html + '</div>';
-        container.scrollTop = 0;
-    },
+                    <div class="status-line">
+                        ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
+                        ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
+                    </div>
+                </div>
+                <div class="prod-price">${p.price}</div>
+            </div>`;
+    });
+    container.innerHTML = html + '</div>';
+    container.scrollTop = 0;
+},
 
     handleSearch() {
         const q = document.getElementById('main-search').value.toLowerCase();
