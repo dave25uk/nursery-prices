@@ -159,10 +159,31 @@ renderList(products) {
         this.renderSidebar();
     },
 
-    renderAZ() {
+renderAZ() {
         const rail = document.getElementById('az-rail');
+        if (!rail) return;
+
+        // 1. Find which letters actually have products in your database
+        const activeLetters = new Set(
+            this.data
+                .filter(p => p.name) 
+                .map(p => p.name.trim().charAt(0).toUpperCase())
+        );
+
         const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        rail.innerHTML = alpha.map(l => `<div style="cursor:pointer;padding:2px;" onclick="app.scrollToLetter('${l}')">${l}</div>`).join("");
+        
+        rail.innerHTML = alpha.map(l => {
+            const hasItems = activeLetters.has(l);
+            
+            if (hasItems) {
+                // Letter exists: Make it green and clickable
+                return `<div style="cursor:pointer; padding:2px; color:var(--nursery-green);" 
+                             onclick="app.scrollToLetter('${l}')">${l}</div>`;
+            } else {
+                // Letter doesn't exist: Make it grey and unclickable
+                return `<div style="padding:2px; color:#ccc; cursor:default; pointer-events:none;">${l}</div>`;
+            }
+        }).join("");
     },
 
     scrollToLetter(l) {
