@@ -39,14 +39,26 @@ const app = {
         this.categories = [...new Set(this.data.map(p => p.category))].sort();
     },
 
-    renderSidebar() {
-        const nav = document.getElementById('sidebar-nav');
-        let html = `<button class="nav-btn ${this.currentView === 'home' ? 'active' : ''}" onclick="app.renderHome()">HOME</button>`;
-        this.categories.forEach(cat => {
-            html += `<button class="nav-btn ${this.currentView === cat ? 'active' : ''}" onclick="app.renderCategory('${cat}')">${cat}</button>`;
-        });
-        nav.innerHTML = html;
-    },
+renderSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    
+    // Home button gets a specific class
+    let html = `<button class="nav-btn home-btn ${this.currentView === 'home' ? 'active' : ''}" 
+                onclick="app.renderHome()">HOME</button>`;
+    
+    this.categories.forEach(cat => {
+        // Create the CSS-friendly class name (e.g., 'cat-perennials')
+        const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+        
+        // Add that class to the button
+        const isActive = this.currentView === cat ? 'active' : '';
+        
+        html += `<button class="nav-btn ${catClass} ${isActive}" 
+                 onclick="app.renderCategory('${cat}')">${cat.toUpperCase()}</button>`;
+    });
+    
+    nav.innerHTML = html;
+},
 
     renderHome() {
         this.currentView = 'home';
