@@ -7,7 +7,7 @@ const app = {
     categories: [],
     currentView: 'home',
 	lastUpdated: '', // New variable to store the date
-openManagement() {
+	openManagement() {
     // Instead of prompt, we show our custom modal
     const modal = document.getElementById('pin-modal');
     const field = document.getElementById('pin-field');
@@ -24,7 +24,7 @@ verifyPin() {
         alert("Incorrect PIN.");
         document.getElementById('pin-field').value = '';
     }
-}
+},
 
  async init() {
         const cache = localStorage.getItem('nursery_data');
