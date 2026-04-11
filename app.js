@@ -6,26 +6,36 @@ const app = {
     data: [],
     categories: [],
     currentView: 'home',
+	lastUpdated: '', // New variable to store the date
 
-    async init() {
-        // 1. Instant load from local cache
+ async init() {
         const cache = localStorage.getItem('nursery_data');
         if (cache) {
             this.data = JSON.parse(cache);
+            this.lastUpdated = localStorage.getItem('last_updated_time') || '';
             this.processCategories();
             this.renderSidebar();
             this.renderHome();
         }
 
-        // 2. Fetch fresh data from Supabase
         try {
             const { data, error } = await sb.from('products').select('*');
             if (!error && data) {
                 this.data = data;
+                
+                // Create a nice date string (e.g., "11 April 2026")
+                const now = new Date();
+                this.lastUpdated = now.toLocaleDateString('en-GB', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                });
+
                 localStorage.setItem('nursery_data', JSON.stringify(data));
+                localStorage.setItem('last_updated_time', this.lastUpdated);
+                
                 this.processCategories();
                 this.renderSidebar();
-                // Update the current view if user is already looking at a category
                 if (this.currentView === 'home') this.renderHome();
                 else if (this.currentView === 'search') this.handleSearch();
                 else this.renderCategory(this.currentView);
@@ -60,18 +70,23 @@ renderSidebar() {
     nav.innerHTML = html;
 },
 
-    renderHome() {
-        this.currentView = 'home';
-        document.getElementById('az-rail').style.display = 'none';
-        document.getElementById('main-content').innerHTML = `
-            <div class="home-view">
-                <img src="logo.png" alt="Logo">
-                <h2 style="color:#2e7d32">Price List 2026</h2>
-                <p style="color:#888; font-weight:bold;">v13.0 | Always Connected</p>
-            </div>
-        `;
-        this.renderSidebar();
-    },
+renderHome() {
+    this.currentView = 'home';
+    document.getElementById('az-rail').style.display = 'none';
+    
+    const updateText = this.lastUpdated ? `Last updated: ${this.lastUpdated}` : '';
+
+    document.getElementById('main-content').innerHTML = `
+        <div class="home-view">
+            <img src="logo.png" alt="Logo">
+            <h2 style="color: var(--nursery-green); margin-top: 20px;">Price List 2026</h2>
+            <p style="color: #888; font-size: 14px; font-weight: 600; margin-top: 10px;">
+                ${updateText}
+            </p>
+        </div>
+    `;
+    this.renderSidebar();
+},
 
     renderCategory(cat) {
         this.currentView = cat;
