@@ -17,10 +17,21 @@
         </header>
 
         <nav class="sidebar" id="sidebar-nav">
-		<button class="nav-btn" onclick="window.location.href='index.html'" style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
+    <button class="nav-btn" onclick="window.location.href='index.html'" style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
         ← BACK TO SHOP
     </button>
-            </nav>
+
+    <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
+        + NEW PRODUCT
+    </button>
+
+    <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
+        + NEW CATEGORY
+    </button>
+
+    <div class="sidebar-nav-links" id="sidebar-nav-list">
+        </div>
+</nav>
 
         <main class="content" id="main-content">
             </main>
@@ -32,10 +43,10 @@
             
             <div style="display:flex; flex-direction:column; gap:15px;">
                 <div>
-                    <label style="display:block; font-weight:bold; font-size:12px;">Category</label>
-                    <input type="text" id="edit-cat" list="cat-list" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;">
-                    <datalist id="cat-list"></datalist>
-                </div>
+    <label style="display:block; font-weight:bold; font-size:12px;">Category</label>
+    <select id="edit-cat" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px; background: white; height: 45px;">
+        </select>
+</div>
                 <div>
                     <label style="display:block; font-weight:bold; font-size:12px;">Plant Name</label>
                     <input type="text" id="edit-name" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:5px;">
