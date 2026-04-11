@@ -77,12 +77,24 @@ body, html {
 
 .product-list { display: flex; flex-direction: column; gap: 12px; }
 
+/* Standard Card Fill */
 .product-card {
-    background: #fff; border: 2px solid #444;
+    background: #fff; 
+    border: 2px solid #444;
     border-radius: 10px; padding: 15px;
     display: flex; justify-content: space-between; align-items: center;
-    border-left: 15px solid var(--nursery-green);
+    border-left: 15px solid #ccc; /* Default Grey */
 }
+
+/* Category Specific Borders */
+.cat-basket-plants { border-left-color: #e91e63; }       /* Pink */
+.cat-bedding { border-left-color: #ff9800; }             /* Orange */
+.cat-compost { border-left-color: #795548; }             /* Brown */
+.cat-melcourt-stone-etc { border-left-color: #607d8b; }  /* Slate Blue */
+.cat-perennials { border-left-color: #9c27b0; }          /* Purple */
+.cat-shrubs-and-trees { border-left-color: #2e7d32; }    /* Dark Green */
+.cat-vegetables { border-left-color: #8bc34a; }          /* Light Green */
+
 
 .prod-name { font-size: 20px; font-weight: 800; color: #111; }
 
