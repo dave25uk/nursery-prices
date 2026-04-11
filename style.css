@@ -1,10 +1,9 @@
 :root {
     --nursery-green: #2e7d32;
-    --offer-orange: #e65100;
     --sidebar-width: 280px;
     --header-height: 85px;
-    --bg-light: #f4f7f6;
-    --border-color: #d1d9e0;
+    --bg-light: #f8f9fa;
+    --border-color: #ced4da;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,88 +26,89 @@ body, html {
 .header {
     grid-column: 1 / span 2;
     background: #fff;
-    border-bottom: 1px solid var(--border-color);
-    display: flex; flex-direction: column; align-items: center;
-    padding: 10px 20px; z-index: 100;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 20px;
+    z-index: 100;
 }
 
 .header h1 {
-    margin: 0; font-size: 12px; color: var(--nursery-green);
-    letter-spacing: 2px; text-transform: uppercase; font-weight: 800;
+    margin: 0; font-size: 14px; color: var(--nursery-green);
+    letter-spacing: 2px; text-transform: uppercase;
 }
 
-.search-wrapper { width: 100%; max-width: 1400px; margin-top: 8px; }
+.search-wrapper { width: 100%; max-width: 1400px; margin-top: 5px; }
 
 #main-search {
-    width: 100%; padding: 12px 18px;
-    border: 1px solid #999; border-radius: 12px;
-    font-size: 18px; outline: none; background: #fff;
+    width: 100%; padding: 12px 15px;
+    border: 2px solid #444; border-radius: 10px;
+    font-size: 18px; outline: none;
 }
 
-/* Sidebar */
+/* Sidebar Navigation */
 .sidebar {
-    background: #fff; border-right: 1px solid var(--border-color);
-    overflow-y: auto; padding: 20px 15px;
-    display: flex; flex-direction: column; gap: 10px;
+    background: #fff;
+    border-right: 2px solid var(--border-color);
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .nav-btn {
-    padding: 16px; border-radius: 12px; border: 1px solid transparent;
-    background: #f8f9fa; color: #333; font-weight: 700;
-    text-align: left; cursor: pointer; font-size: 15px; transition: all 0.1s;
-}
-
-.nav-btn:active { transform: scale(0.98); }
-.nav-btn.active { background-color: var(--nursery-green); color: #fff; }
-
-/* Product Card Base */
-.product-card {
-    background: #fff; /* Standard Fill Color */
+    padding: 18px 15px; border-radius: 12px;
     border: 1px solid var(--border-color);
-    border-radius: 12px; padding: 15px 18px;
-    display: flex; flex-direction: column; gap: 8px;
-    border-left: 12px solid #ccc; /* Default border */
-    margin-bottom: 12px;
-    scroll-margin-top: 20px;
+    background: #fff; color: #000;
+    font-weight: 800; text-align: left;
+    cursor: pointer; font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Specific Category Border Colours */
-.cat-basket-plants { border-left-color: #e91e63; } /* Pink */
-.cat-bedding { border-left-color: #ff9800; }       /* Orange */
-.cat-compost { border-left-color: #795548; }       /* Brown */
-.cat-melcourt-stone-etc { border-left-color: #607d8b; } /* Slate */
-.cat-perennials { border-left-color: #9c27b0; }    /* Purple */
-.cat-shrubs-and-trees { border-left-color: #2e7d32; } /* Dark Green */
-.cat-vegetables { border-left-color: #8bc34a; }    /* Light Green */
-
-/* Card Layout */
-.card-top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-.card-bottom-row { display: flex; gap: 12px; align-items: center; font-size: 14px; }
-
-.prod-name { font-size: 20px; font-weight: 800; color: #1a1a1a; flex: 1; }
-.prod-offer { color: var(--offer-orange); font-weight: 700; font-size: 16px; margin: 0 15px; }
-.prod-price { font-size: 19px; font-weight: 800; color: #1a1a1a; min-width: 80px; text-align: right; }
-
-.stock-alert { color: #d32f2f; font-weight: 900; text-transform: uppercase; font-size: 12px; }
-.prod-comments { color: #666; font-style: italic; }
-
-/* Modal & Other UI elements remain the same */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); display: none;
-    align-items: center; justify-content: center; z-index: 2000;
+.nav-btn.active {
+    background-color: var(--nursery-green);
+    color: #fff; border-color: var(--nursery-green);
 }
-.modal-content { background: white; width: 95%; max-width: 500px; border-radius: 20px; padding: 25px; }
-.modal-field { margin-bottom: 12px; }
-.modal-field label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 13px; }
-.modal-field input, .modal-field select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
-.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-.btn-save { background: var(--nursery-green); color: white; flex: 2; }
-.btn-cancel { background: #eee; color: #333; flex: 1; }
-.btn-delete { background: #ff5252; color: white; margin-top: 20px; width: 100%; }
+
+/* Product Area */
+.content { overflow-y: auto; padding: 20px 60px 20px 20px; }
+
+.product-list { display: flex; flex-direction: column; gap: 12px; }
+
+.product-card {
+    background: #fff; border: 2px solid #444;
+    border-radius: 10px; padding: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-left: 15px solid var(--nursery-green);
+}
+
+.prod-name { font-size: 20px; font-weight: 800; color: #111; }
+
+.status-line { margin-top: 5px; display: flex; gap: 10px; align-items: center; }
+.stock-label { font-size: 13px; font-weight: 900; text-transform: uppercase; color: #555; }
+.comment-label { font-size: 14px; font-style: italic; color: #666; border-left: 1px solid #ccc; padding-left: 10px; }
+
+.prod-price {
+    background: var(--nursery-green); color: white;
+    padding: 12px; border-radius: 8px;
+    font-weight: 900; font-size: 20px;
+    min-width: 110px; text-align: center;
+}
+
+/* Stock Variations */
+.card-low { background-color: #fff4e5; border-color: #ffb74d; }
+.card-out { background-color: #ffebee; border-color: #ef5350; }
+
+/* Home View & AZ */
+.home-view { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.home-view img { max-width: 450px; width: 70%; margin-bottom: 20px; }
 
 .az-rail {
-    position: fixed; right: 10px; top: 100px; bottom: 20px; width: 30px;
-    display: flex; flex-direction: column; justify-content: space-around;
-    align-items: center; font-weight: 800; color: #adb5bd; font-size: 11px;
+    position: fixed; right: 8px; top: var(--header-height); bottom: 10px;
+    width: 35px; display: none; flex-direction: column;
+    justify-content: space-around; align-items: center;
+    background: rgba(255,255,255,0.9); border-radius: 20px;
+    border: 1px solid #ddd; font-weight: 800; color: var(--nursery-green); font-size: 13px;
 }
