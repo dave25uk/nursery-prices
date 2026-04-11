@@ -23,6 +23,7 @@ body, html {
     height: 100%;
 }
 
+/* Header & Search */
 .header {
     grid-column: 1 / span 2;
     background: #fff;
@@ -56,28 +57,25 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 12px;
-	height: 100%;
-}
-
-.sidebar-nav-links {
-    flex-grow: 1; /* Pushes the management button down */
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    height: 100%;
 }
 
 .nav-btn {
-    padding: 18px 15px; border-radius: 12px;
+    padding: 18px 15px; 
+    border-radius: 12px;
     border: 1px solid var(--border-color);
-    background: #fff; color: #000;
-    font-weight: 800; text-align: left;
-    cursor: pointer; font-size: 16px;
+    background: #fff; 
+    color: #000;
+    font-weight: 800; 
+    text-align: left;
+    cursor: pointer; 
+    font-size: 16px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-	border-left: 10px solid #ccc; /* Matches the thick look of product cards */
+    border-left: 15px solid #ccc; /* Matches thick card border */
     transition: all 0.2s ease;
 }
 
-/* Sidebar Navigation Active States */
+/* Sidebar Active States (Fill color) */
 .nav-btn.active.cat-basket-plants { background-color: #e91e63; color: #fff; }
 .nav-btn.active.cat-bedding { background-color: #ff9800; color: #fff; }
 .nav-btn.active.cat-compost { background-color: #795548; color: #fff; }
@@ -86,39 +84,39 @@ body, html {
 .nav-btn.active.cat-shrubs-and-trees { background-color: #2e7d32; color: #fff; }
 .nav-btn.active.cat-vegetables { background-color: #8bc34a; color: #fff; }
 
-/* NEW FALLBACK: Use nursery green for any active category button not listed above */
-.nav-btn.active[class*="cat-"] { background-color: var(--nursery-green); border-color: var(--nursery-green); color: #fff; }
-
-/* Keep the Home button the standard Nursery Green */
+/* Active Fallback for new categories */
+.nav-btn.active[class*="cat-"] { background-color: var(--nursery-green); color: #fff; }
 .nav-btn.active.home-btn { background-color: var(--nursery-green); color: #fff; border-color: var(--nursery-green); }
 
-/* Product Area */
+/* Main Content Area */
 .content { overflow-y: auto; padding: 20px 60px 20px 20px; }
-
 .product-list { display: flex; flex-direction: column; gap: 12px; }
 
-/* Standard Card Fill */
+/* Product Cards */
 .product-card {
     background: #fff; 
     border: 2px solid #444;
-    border-radius: 10px; padding: 15px;
-    display: flex; justify-content: space-between; align-items: center;
-    border-left: 15px solid #ccc; /* Default Grey */
+    border-radius: 10px; 
+    padding: 15px;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    border-left: 15px solid #ccc; /* Thick Base */
 }
 
-/* Category Specific Borders */
-.product-card[class*="cat-"] { border-left-color: var(--nursery-green); } /* Default Green for NEW categories */
-.cat-basket-plants { border-left-color: #e91e63; }
-.cat-bedding { border-left-color: #ff9800; }
-.cat-compost { border-left-color: #795548; }
-.cat-melcourt-stone-etc { border-left-color: #607d8b; }
-.cat-perennials { border-left-color: #9c27b0; }
-.cat-shrubs-and-trees { border-left-color: #2e7d32; }
-.cat-vegetables { border-left-color: #8bc34a; }
+/* --- CATEGORY COLORS (Applies to Buttons and Cards) --- */
+.product-card[class*="cat-"], .nav-btn[class*="cat-"] { border-left-color: var(--nursery-green); }
 
+.cat-basket-plants      { border-left-color: #e91e63 !important; }
+.cat-bedding            { border-left-color: #ff9800 !important; }
+.cat-compost            { border-left-color: #795548 !important; }
+.cat-melcourt-stone-etc { border-left-color: #607d8b !important; }
+.cat-perennials         { border-left-color: #9c27b0 !important; }
+.cat-shrubs-and-trees   { border-left-color: #2e7d32 !important; }
+.cat-vegetables         { border-left-color: #8bc34a !important; }
 
+/* Card Content Styling */
 .prod-name { font-size: 20px; font-weight: 800; color: #111; }
-
 .status-line { margin-top: 5px; display: flex; gap: 10px; align-items: center; }
 .stock-label { font-size: 13px; font-weight: 900; text-transform: uppercase; color: #555; }
 .comment-label { font-size: 14px; font-style: italic; color: #666; border-left: 1px solid #ccc; padding-left: 10px; }
@@ -130,7 +128,7 @@ body, html {
     border-radius: 8px;
     font-weight: 900;
     font-size: 20px;
-    min-width: 100px; /* Ensures boxes are consistent sizes */
+    min-width: 100px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -139,16 +137,10 @@ body, html {
 .card-low { background-color: #fff4e5; border-color: #ffb74d; }
 .card-out { background-color: #ffebee; border-color: #ef5350; }
 
-/* Home View & AZ */
-.home-view { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.home-view img { max-width: 450px; width: 70%; margin-bottom: 20px; }
-
-.az-rail {
-    position: fixed; right: 8px; top: var(--header-height); bottom: 10px;
-    width: 35px; display: none; flex-direction: column;
-    justify-content: space-around; align-items: center;
-    background: rgba(255,255,255,0.9); border-radius: 20px;
-    border: 1px solid #ddd; font-weight: 800; color: var(--nursery-green); font-size: 13px;
+/* Management Specific Styles */
+.nav-btn[onclick*="index.html"], 
+.nav-btn[onclick*="openModal(null)"] {
+    border-left: 1px solid var(--border-color) !important;
 }
 
 .mgmt-btn {
@@ -163,9 +155,16 @@ body, html {
     text-align: center;
     cursor: pointer;
     text-transform: uppercase;
-	
 }
-.nav-btn[onclick*="index.html"], 
-.nav-btn[onclick*="openModal(null)"] {
-    border-left: 1px solid var(--border-color); /* Keeps these buttons simple */
+
+/* Home View & AZ Rail (Shop Page) */
+.home-view { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.home-view img { max-width: 450px; width: 70%; margin-bottom: 20px; }
+
+.az-rail {
+    position: fixed; right: 8px; top: var(--header-height); bottom: 10px;
+    width: 35px; display: none; flex-direction: column;
+    justify-content: space-around; align-items: center;
+    background: rgba(255,255,255,0.9); border-radius: 20px;
+    border: 1px solid #ddd; font-weight: 800; color: var(--nursery-green); font-size: 13px;
 }
