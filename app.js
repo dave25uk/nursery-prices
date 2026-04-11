@@ -8,7 +8,7 @@ const app = {
     currentView: 'home',
 
     async init() {
-        // 1. Instant load from local cache
+        // 1. Load from local cache for instant startup
         const cache = localStorage.getItem('nursery_data');
         if (cache) {
             this.data = JSON.parse(cache);
@@ -25,26 +25,42 @@ const app = {
                 localStorage.setItem('nursery_data', JSON.stringify(data));
                 this.processCategories();
                 this.renderSidebar();
-                // Update the current view if user is already looking at a category
+                
+                // Refresh the current view with fresh data
                 if (this.currentView === 'home') this.renderHome();
                 else if (this.currentView === 'search') this.handleSearch();
+                else if (this.currentView === 'admin') this.renderAdminTable();
                 else this.renderCategory(this.currentView);
             }
-        } catch (e) { console.error("Database error", e); }
+        } catch (e) { 
+            console.error("Database connection failed", e); 
+        }
         
         this.renderAZ();
     },
 
     processCategories() {
-        this.categories = [...new Set(this.data.map(p => p.category))].sort();
+        // Find unique categories and sort them alphabetically
+        this.categories = [...new Set(this.data.map(p => p.category || "Uncategorized"))].sort();
     },
 
     renderSidebar() {
         const nav = document.getElementById('sidebar-nav');
         let html = `<button class="nav-btn ${this.currentView === 'home' ? 'active' : ''}" onclick="app.renderHome()">HOME</button>`;
+        
         this.categories.forEach(cat => {
             html += `<button class="nav-btn ${this.currentView === cat ? 'active' : ''}" onclick="app.renderCategory('${cat}')">${cat}</button>`;
         });
+
+        // Add Management button at the bottom
+        html += `
+            <div style="margin-top:auto; padding-top:20px; border-top:1px solid #ddd;">
+                <button class="nav-btn ${this.currentView === 'admin' ? 'active' : ''}" 
+                    onclick="app.renderAdminTable()" style="background:#f8f9fa; border: 2px solid #333;">
+                    ⚙️ MANAGEMENT
+                </button>
+            </div>
+        `;
         nav.innerHTML = html;
     },
 
@@ -55,7 +71,7 @@ const app = {
             <div class="home-view">
                 <img src="logo.png" alt="Logo">
                 <h2 style="color:#2e7d32">Price List 2026</h2>
-                <p style="color:#888; font-weight:bold;">v13.0 | Always Connected</p>
+                <p style="color:#888; font-weight:bold;">v13.0 | Database Connected</p>
             </div>
         `;
         this.renderSidebar();
@@ -72,9 +88,11 @@ const app = {
     renderList(products) {
         const container = document.getElementById('main-content');
         let html = '<div class="product-list">';
+        
         products.forEach(p => {
             const s = (p.stock || "").toLowerCase();
             const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
+            
             html += `
                 <div class="product-card ${bgClass}">
                     <div class="prod-info">
@@ -84,20 +102,129 @@ const app = {
                             ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
                         </div>
                     </div>
-                    <div class="prod-price">${p.price}</div>
+                    <div class="prod-price">${p.price || 'TBC'}</div>
                 </div>`;
         });
+        
         container.innerHTML = html + '</div>';
         container.scrollTop = 0;
+    },
+
+    renderAdminTable() {
+        this.currentView = 'admin';
+        document.getElementById('az-rail').style.display = 'none';
+        this.renderSidebar();
+
+        const container = document.getElementById('main-content');
+        let html = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="margin:0;">Product Management</h2>
+                <button class="nav-btn" onclick="app.addNewProduct()" style="padding:10px 20px; background: #2e7d32; color:white;">+ Add New Plant</button>
+            </div>
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Plant Name</th>
+                            <th>Price</th>
+                            <th>Stock Status</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        const sorted = [...this.data].sort((a,b) => (a.category || "").localeCompare(b.category || "") || a.name.localeCompare(b.name));
+
+        sorted.forEach(p => {
+            html += `
+                <tr>
+                    <td>
+                        <input type="text" value="${p.category || ''}" 
+                            onchange="app.updateField(${p.id}, 'category', this.value)" list="cat-list">
+                    </td>
+                    <td>
+                        <input type="text" value="${p.name || ''}" 
+                            onchange="app.updateField(${p.id}, 'name', this.value)">
+                    </td>
+                    <td>
+                        <input type="text" value="${p.price || ''}" 
+                            onchange="app.updateField(${p.id}, 'price', this.value)">
+                    </td>
+                    <td>
+                        <select onchange="app.updateField(${p.id}, 'stock', this.value)">
+                            <option value="" ${!p.stock ? 'selected' : ''}>In Stock</option>
+                            <option value="Low Stock" ${p.stock === 'Low Stock' ? 'selected' : ''}>Low Stock</option>
+                            <option value="Out of Stock" ${p.stock === 'Out of Stock' ? 'selected' : ''}>Out of Stock</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" value="${p.comments || ''}" 
+                            onchange="app.updateField(${p.id}, 'comments', this.value)">
+                    </td>
+                </tr>
+            `;
+        });
+
+        const catOptions = this.categories.map(c => `<option value="${c}">`).join('');
+        
+        html += `</tbody></table></div>
+                <datalist id="cat-list">${catOptions}</datalist>
+                <div id="save-msg" class="save-indicator">Saving change...</div>`;
+        
+        container.innerHTML = html;
+    },
+
+    async updateField(id, field, value) {
+        const msg = document.getElementById('save-msg');
+        if (msg) msg.style.display = 'block';
+
+        const { error } = await sb
+            .from('products')
+            .update({ [field]: value })
+            .eq('id', id);
+
+        if (error) {
+            alert("Error updating database!");
+            console.error(error);
+        } else {
+            const item = this.data.find(p => p.id === id);
+            if (item) item[field] = value;
+            localStorage.setItem('nursery_data', JSON.stringify(this.data));
+            
+            if (field === 'category') this.processCategories();
+            
+            setTimeout(() => { if (msg) msg.style.display = 'none'; }, 1000);
+        }
+    },
+
+    async addNewProduct() {
+        const name = prompt("Enter new plant name:");
+        if (!name) return;
+
+        const { data, error } = await sb
+            .from('products')
+            .insert([{ name: name, category: 'Uncategorized', price: '£0.00' }])
+            .select();
+
+        if (!error && data) {
+            this.data.push(data[0]);
+            this.processCategories();
+            this.renderAdminTable();
+        }
     },
 
     handleSearch() {
         const q = document.getElementById('main-search').value.toLowerCase();
         if (!q) { this.renderHome(); return; }
+        
         this.currentView = 'search';
         const results = this.data.filter(p => 
-            p.name.toLowerCase().includes(q) || (p.tags && p.tags.toLowerCase().includes(q))
+            p.name.toLowerCase().includes(q) || 
+            (p.tags && p.tags.toLowerCase().includes(q))
         ).sort((a,b) => a.name.localeCompare(b.name));
+        
         this.renderList(results);
         document.getElementById('az-rail').style.display = 'flex';
         this.renderSidebar();
@@ -112,12 +239,14 @@ const app = {
     scrollToLetter(l) {
         const cards = document.getElementsByClassName('product-card');
         for (let card of cards) {
-            if (card.querySelector('.prod-name').innerText.trim().toUpperCase().startsWith(l)) {
-                card.scrollIntoView({ behavior: 'smooth' });
+            const name = card.querySelector('.prod-name').innerText.trim().toUpperCase();
+            if (name.startsWith(l)) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 break;
             }
         }
     }
 };
 
+// Initialize the app
 app.init();

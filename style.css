@@ -112,3 +112,58 @@ body, html {
     background: rgba(255,255,255,0.9); border-radius: 20px;
     border: 1px solid #ddd; font-weight: 800; color: var(--nursery-green); font-size: 13px;
 }
+
+/* Admin Table Styles */
+.admin-table-container {
+    width: 100%;
+    overflow-x: auto;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.admin-table th {
+    background: var(--nursery-green);
+    color: white;
+    position: sticky;
+    top: 0;
+    padding: 10px;
+    text-align: left;
+}
+
+.admin-table td {
+    border: 1px solid #ddd;
+    padding: 0;
+}
+
+.admin-table input, .admin-table select {
+    width: 100%;
+    padding: 12px 8px;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.admin-table input:focus {
+    background-color: #e8f5e9;
+}
+
+.save-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 70px;
+    background: #333;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    display: none;
+    z-index: 1000;
+}
