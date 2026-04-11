@@ -68,6 +68,7 @@ body, html {
     border-radius: 12px; padding: 18px;
     display: flex; justify-content: space-between; align-items: center;
     border-left: 10px solid var(--nursery-green); margin-bottom: 12px;
+    scroll-margin-top: 20px;
 }
 
 .prod-name { font-size: 19px; font-weight: 700; color: #1a1a1a; }
@@ -103,7 +104,6 @@ body, html {
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-.modal-content h3 { margin-top: 0; color: var(--nursery-green); }
 .modal-field { margin-bottom: 15px; }
 .modal-field label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
 .modal-field input, .modal-field select {
@@ -114,7 +114,7 @@ body, html {
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .btn-save { background: var(--nursery-green); color: white; flex: 2; }
 .btn-cancel { background: #eee; color: #333; flex: 1; }
-.btn-delete { background: #ff5252; color: white; margin-top: 10px; width: 100%; }
+.btn-delete { background: #ff5252; color: white; margin-top: 20px; width: 100%; }
 
 /* A-Z Rail */
 .az-rail {

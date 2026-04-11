@@ -2,7 +2,6 @@ const SUPABASE_URL = 'https://xnjsvclilulxxnuvyfla.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuanN2Y2xpbHVseHhudXZ5ZmxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTM0NjYsImV4cCI6MjA5MTQ2OTQ2Nn0.jJheSQImSYPRaALGyuUNU5bkUl2D7SihcolMdk7dBDI';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-
 const app = {
     data: [],
     categories: [],
@@ -65,7 +64,7 @@ const app = {
     renderCategory(cat) {
         this.currentView = cat;
         const filtered = this.data.filter(p => p.category === cat).sort((a,b) => a.name.localeCompare(b.name));
-        this.renderList(filtered, false);
+        this.renderList(filtered, false, ""); 
         document.getElementById('az-rail').style.display = 'flex';
         this.renderSidebar();
     },
@@ -75,31 +74,29 @@ const app = {
         document.getElementById('az-rail').style.display = 'none';
         const sorted = [...this.data].sort((a,b) => (a.category||"").localeCompare(b.category||"") || a.name.localeCompare(b.name));
         
-        let html = `
+        const headerHtml = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2 style="margin:0;">Management Mode</h2>
                 <button class="nav-btn" onclick="app.openEditModal(null)" style="background:var(--nursery-green); color:white;">+ ADD NEW</button>
             </div>`;
         
-        document.getElementById('main-content').innerHTML = html;
-        this.renderList(sorted, true); // true = show edit buttons
+        this.renderList(sorted, true, headerHtml);
         this.renderSidebar();
     },
 
-    renderList(products, isAdmin) {
+    renderList(products, isAdmin, prefixHtml) {
         const container = document.getElementById('main-content');
-        const listDiv = document.createElement('div');
-        listDiv.className = 'product-list';
+        let html = prefixHtml + '<div class="product-list">';
         
         products.forEach(p => {
             const s = (p.stock || "").toLowerCase();
             const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
             
-            listDiv.innerHTML += `
+            html += `
                 <div class="product-card ${bgClass}">
                     <div class="prod-info">
                         <div class="prod-name">${p.name}</div>
-                        <div style="font-size:12px; color:#888;">${isAdmin ? p.category : ''}</div>
+                        ${isAdmin ? `<div style="font-size:11px; color:#888; font-weight:bold; text-transform:uppercase;">${p.category}</div>` : ''}
                         <div class="status-line">
                             ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
                             ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
@@ -111,16 +108,19 @@ const app = {
                     </div>
                 </div>`;
         });
-        container.appendChild(listDiv);
+        
+        container.innerHTML = html + '</div>';
+        container.scrollTop = 0;
     },
 
     // --- MODAL LOGIC ---
 
     injectModal() {
+        if(document.getElementById('edit-modal')) return;
         const modalHtml = `
             <div id="edit-modal" class="modal-overlay">
                 <div class="modal-content">
-                    <h3 id="modal-title">Edit Product</h3>
+                    <h3 id="modal-title" style="margin-top:0; color:var(--nursery-green);">Edit Product</h3>
                     <div class="modal-field">
                         <label>Category</label>
                         <input type="text" id="edit-cat" list="cat-list">
@@ -151,7 +151,7 @@ const app = {
                     </div>
                     <button id="del-btn" class="nav-btn btn-delete" onclick="app.deleteProduct()">Delete Product</button>
                 </div>
-            </div>`;
+            </div><datalist id="cat-list"></datalist>`;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     },
 
@@ -160,6 +160,9 @@ const app = {
         const modal = document.getElementById('edit-modal');
         const delBtn = document.getElementById('del-btn');
         
+        // Update datalist for categories
+        document.getElementById('cat-list').innerHTML = this.categories.map(c => `<option value="${c}">`).join('');
+
         if (id) {
             const p = this.data.find(x => x.id === id);
             document.getElementById('modal-title').innerText = "Edit Product";
@@ -198,7 +201,7 @@ const app = {
             await sb.from('products').insert([payload]);
         }
         this.closeModal();
-        this.init(); // Refresh everything
+        this.init(); 
     },
 
     async deleteProduct() {
@@ -214,14 +217,14 @@ const app = {
         if (!q) { this.renderHome(); return; }
         this.currentView = 'search';
         const res = this.data.filter(p => p.name.toLowerCase().includes(q) || (p.tags && p.tags.toLowerCase().includes(q)));
-        this.renderList(res, false);
+        this.renderList(res, false, `<h2 style="margin-top:0;">Search Results</h2>`);
         document.getElementById('az-rail').style.display = 'flex';
         this.renderSidebar();
     },
 
     renderAZ() {
         const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        document.getElementById('az-rail').innerHTML = alpha.map(l => `<div onclick="app.scrollToLetter('${l}')">${l}</div>`).join("");
+        document.getElementById('az-rail').innerHTML = alpha.map(l => `<div style="cursor:pointer;padding:2px;" onclick="app.scrollToLetter('${l}')">${l}</div>`).join("");
     },
 
     scrollToLetter(l) {
