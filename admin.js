@@ -109,33 +109,48 @@ renderList(products) {
     container.scrollTop = 0;
 },
 
-    openModal(id) {
-        this.editingId = id;
-        const modal = document.getElementById('edit-modal');
-        document.getElementById('cat-list').innerHTML = this.categories.map(c => `<option value="${c}">`).join('');
+openModal(id) {
+    this.editingId = id;
+    const modal = document.getElementById('edit-modal');
+    document.getElementById('cat-list').innerHTML = this.categories.map(c => `<option value="${c}">`).join('');
 
-        if (id) {
-            const p = this.data.find(x => x.id === id);
-            document.getElementById('modal-title').innerText = "Edit Product";
-            document.getElementById('edit-cat').value = p.category || '';
-            document.getElementById('edit-name').value = p.name || '';
-            document.getElementById('edit-offer').value = p.offer || '';
-            document.getElementById('edit-price').value = p.price || '';
-            document.getElementById('edit-stock').value = p.stock || '';
-            document.getElementById('edit-comments').value = p.comments || '';
-            document.getElementById('del-btn').style.display = "block";
-        } else {
-            document.getElementById('modal-title').innerText = "Add New Plant";
-            document.getElementById('edit-cat').value = '';
-            document.getElementById('edit-name').value = '';
-            document.getElementById('edit-offer').value = '';
-            document.getElementById('edit-price').value = '£';
-            document.getElementById('edit-stock').value = '';
-            document.getElementById('edit-comments').value = '';
-            document.getElementById('del-btn').style.display = "none";
+    if (id) {
+        const p = this.data.find(x => x.id === id);
+        document.getElementById('modal-title').innerText = "Edit Product";
+        document.getElementById('edit-cat').value = p.category || '';
+        document.getElementById('edit-name').value = p.name || '';
+        document.getElementById('edit-offer').value = p.offer || '';
+        document.getElementById('edit-price').value = p.price || '';
+        document.getElementById('edit-comments').value = p.comments || '';
+        document.getElementById('del-btn').style.display = "block";
+
+        // --- FORCE STOCK DROPDOWN SELECTION ---
+        const stockSelect = document.getElementById('edit-stock');
+        const dbValue = (p.stock || "").trim();
+        
+        // Loop through options to find a match (ignoring case)
+        let matched = false;
+        for (let i = 0; i < stockSelect.options.length; i++) {
+            if (stockSelect.options[i].value.toLowerCase() === dbValue.toLowerCase()) {
+                stockSelect.selectedIndex = i;
+                matched = true;
+                break;
+            }
         }
-        modal.style.display = "flex";
-    },
+        if (!matched) stockSelect.selectedIndex = 0; // Default to "In Stock"
+
+    } else {
+        document.getElementById('modal-title').innerText = "Add New Plant";
+        document.getElementById('edit-cat').value = '';
+        document.getElementById('edit-name').value = '';
+        document.getElementById('edit-offer').value = '';
+        document.getElementById('edit-price').value = '£';
+        document.getElementById('edit-stock').value = ''; 
+        document.getElementById('edit-comments').value = '';
+        document.getElementById('del-btn').style.display = "none";
+    }
+    modal.style.display = "flex";
+},
 
     closeModal() { document.getElementById('edit-modal').style.display = "none"; },
 
