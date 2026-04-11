@@ -88,29 +88,26 @@ renderList(products) {
     products.forEach(p => {
         const s = (p.stock || "").toLowerCase();
         const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
-        
-        // --- NEW LOGIC START ---
-        // This converts "Shrubs and Trees" into "cat-shrubs-and-trees" 
-        // to match the Task 1 CSS exactly.
-        const catClass = `cat-${(p.category || "none")
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-') // Replace spaces/brackets with hyphens
-            .replace(/^-+|-+$/g, '')}`;  // Clean up ends
-        // --- NEW LOGIC END ---
+        const catClass = `cat-${(p.category || "none").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
 
         html += `
             <div class="product-card ${bgClass} ${catClass}">
-                <div class="prod-info">
-                    <div style="display: flex; align-items: baseline; gap: 15px;">
-                        <div class="prod-name">${p.name}</div>
-                        ${p.offer ? `<div style="color: #e65100; font-weight: 700; font-size: 16px;">${p.offer}</div>` : ''}
+                <div style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; width: 100%;">
+                        <div class="prod-name" style="flex: 1;">${p.name}</div>
+                        
+                        <div class="prod-offer" style="flex: 1; text-align: center; color: #e65100; font-weight: 700; font-size: 16px;">
+                            ${p.offer ? p.offer : ''}
+                        </div>
+                        
+                        <div class="prod-price" style="flex: 1; text-align: right;">${p.price}</div>
                     </div>
-                    <div class="status-line">
+
+                    <div class="status-line" style="margin-top: 8px;">
                         ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
                         ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
                     </div>
                 </div>
-                <div class="prod-price">${p.price}</div>
             </div>`;
     });
     container.innerHTML = html + '</div>';
