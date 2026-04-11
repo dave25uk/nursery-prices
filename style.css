@@ -139,3 +139,10 @@ body, html {
     justify-content: space-around; align-items: center;
     font-weight: 800; color: #adb5bd; font-size: 11px;
 }
+.home-view img { 
+    max-width: 300px; /* Limits width */
+    width: 100%;      /* Makes it responsive */
+    height: auto; 
+    margin-bottom: 20px;
+    object-fit: contain;
+}
