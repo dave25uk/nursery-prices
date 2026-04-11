@@ -110,10 +110,10 @@ body, html {
 .comment-label { font-size: 14px; font-style: italic; color: #666; border-left: 1px solid #ccc; padding-left: 10px; }
 
 .prod-price {
-    background: var(--nursery-green); color: white;
-    padding: 12px; border-radius: 8px;
-    font-weight: 900; font-size: 20px;
-    min-width: 110px; text-align: center;
+    color: #111; /* Changed from white to dark for better visibility on white bg */
+    font-weight: 900;
+    font-size: 22px;
+    /* Removed background, padding, and min-width to allow centering logic to work */
 }
 
 /* Stock Variations */
