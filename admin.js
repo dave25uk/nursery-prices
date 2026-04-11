@@ -31,7 +31,7 @@ const app = {
 renderSidebar() {
     const nav = document.getElementById('sidebar-nav');
     
-    // START with the Back to Shop button so it's always at the top
+    // START with the Back to Shop button
     let html = `
         <button class="nav-btn" onclick="window.location.href='index.html'" 
                 style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
@@ -40,11 +40,17 @@ renderSidebar() {
 
     // Add the "View All" and "Add New" buttons
     html += `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()">VIEW ALL</button>`;
-    html += `<button class="nav-btn" onclick="app.openModal(null)" style="border: 2px dashed var(--nursery-green);">+ ADD NEW</button>`;
+    html += `<button class="nav-btn" onclick="app.openModal(null)" style="border: 2px dashed var(--nursery-green); margin-bottom: 10px;">+ ADD NEW</button>`;
     
-    // Add the categories
+    // Add the categories with their color classes
     this.categories.forEach(cat => {
-        html += `<button class="nav-btn ${this.currentView === cat ? 'active' : ''}" onclick="app.renderCategory('${cat}')">${cat}</button>`;
+        // Create CSS-friendly class name (same as index.html)
+        const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+        const isActive = this.currentView === cat ? 'active' : '';
+        
+        html += `<button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
+                    ${cat.toUpperCase()}
+                 </button>`;
     });
     
     nav.innerHTML = html;
@@ -64,25 +70,44 @@ renderSidebar() {
         this.renderSidebar();
     },
 
-    renderList(products) {
-        const container = document.getElementById('main-content');
-        let html = '<div class="product-list">';
-        products.forEach(p => {
-            html += `
-                <div class="product-card" onclick="app.openModal(${p.id})" style="cursor:pointer;">
-                    <div style="width: 100%;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-size:12px; color:#888;">${p.category}</div>
-                                <div class="prod-name">${p.name}</div>
-                            </div>
+renderList(products) {
+    const container = document.getElementById('main-content');
+    let html = '<div class="product-list">';
+    
+    products.forEach(p => {
+        const s = (p.stock || "").toLowerCase();
+        // Applies the red/orange backgrounds for stock levels
+        const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
+        
+        // Category class for border colors
+        const catClass = `cat-${(p.category || "none")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')}`;
+
+        html += `
+            <div class="product-card ${bgClass} ${catClass}" onclick="app.openModal(${p.id})" style="cursor:pointer;">
+                <div style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        
+                        <div class="prod-name" style="padding-right: 20px;">${p.name}</div>
+                        
+                        <div style="display: flex; align-items: center; gap: 20px; flex-shrink: 0;">
+                            ${p.offer ? `<span style="color: #e65100; font-weight: 700; font-size: 16px; white-space: nowrap;">${p.offer}</span>` : ''}
                             <div class="prod-price">${p.price}</div>
                         </div>
                     </div>
-                </div>`;
-        });
-        container.innerHTML = html + '</div>';
-    },
+
+                    <div class="status-line" style="margin-top: 10px;">
+                        ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
+                        ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
+                    </div>
+                </div>
+            </div>`;
+    });
+    container.innerHTML = html + '</div>';
+    container.scrollTop = 0;
+},
 
     openModal(id) {
         this.editingId = id;
