@@ -28,41 +28,45 @@ const app = {
         else this.renderCategory(this.currentView);
     },
 
-    renderSidebar() {
-        const nav = document.getElementById('sidebar-nav');
-        
-        // Functional Buttons (Back, View All, Add Product, Add Category)
-        let html = `
-            <button class="nav-btn" onclick="window.location.href='index.html'" 
-                    style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
-                ← BACK TO SHOP
-            </button>
-            <button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()">VIEW ALL STOCK</button>
-            
-            <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
-                + ADD NEW PRODUCT
-            </button>
+renderSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    
+    // 1. Navigation Back (Top)
+    let html = `
+        <button class="nav-btn" onclick="window.location.href='index.html'" 
+                style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
+            ← BACK TO SHOP
+        </button>`;
 
-            <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
-                + NEW CATEGORY
-            </button>
-            
-            <div class="sidebar-nav-links">`;
+    // 2. Action Buttons (Grouped together)
+    html += `
+        <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
+            + NEW PRODUCT
+        </button>
 
-        // Category List
-        this.categories.forEach(cat => {
-            const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-            const isActive = this.currentView === cat ? 'active' : '';
-            
-            html += `
-                <button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
-                    ${cat.toUpperCase()}
-                </button>`;
-        });
+        <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
+            + NEW CATEGORY
+        </button>`;
+
+    // 3. View All Button
+    html += `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()" style="margin-bottom: 10px;">VIEW ALL STOCK</button>`;
+    
+    // 4. Category List Container
+    html += `<div class="sidebar-nav-links">`;
+
+    this.categories.forEach(cat => {
+        const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+        const isActive = this.currentView === cat ? 'active' : '';
         
-        html += `</div>`;
-        nav.innerHTML = html;
-    },
+        html += `
+            <button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
+                ${cat.toUpperCase()}
+            </button>`;
+    });
+    
+    html += `</div>`;
+    nav.innerHTML = html;
+},
 
     addNewCategory() {
         const newCat = prompt("Enter the name for the new category:");
