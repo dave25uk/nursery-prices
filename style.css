@@ -84,6 +84,9 @@ body, html {
 .nav-btn.active.cat-shrubs-and-trees { background-color: #2e7d32; border-color: #2e7d32; color: #fff; }
 .nav-btn.active.cat-vegetables { background-color: #8bc34a; border-color: #8bc34a; color: #fff; }
 
+/* NEW FALLBACK: Use nursery green for any active category button not listed above */
+.nav-btn.active[class*="cat-"] { background-color: var(--nursery-green); border-color: var(--nursery-green); color: #fff; }
+
 /* Keep the Home button the standard Nursery Green */
 .nav-btn.active.home-btn { background-color: var(--nursery-green); color: #fff; border-color: var(--nursery-green); }
 
@@ -102,6 +105,7 @@ body, html {
 }
 
 /* Category Specific Borders */
+.product-card[class*="cat-"] { border-left-color: var(--nursery-green); } /* Default Green for NEW categories */
 .cat-basket-plants { border-left-color: #e91e63; }       /* Pink */
 .cat-bedding { border-left-color: #ff9800; }             /* Orange */
 .cat-compost { border-left-color: #795548; }             /* Brown */

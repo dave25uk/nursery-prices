@@ -139,24 +139,29 @@ renderList(products) {
 
     closeModal() { document.getElementById('edit-modal').style.display = "none"; },
 
-    async saveProduct() {
-        const payload = {
-            category: document.getElementById('edit-cat').value,
-            name: document.getElementById('edit-name').value,
-            offer: document.getElementById('edit-offer').value,
-            price: document.getElementById('edit-price').value,
-            stock: document.getElementById('edit-stock').value,
-            comments: document.getElementById('edit-comments').value
-        };
+async saveProduct() {
+    const payload = {
+        category: document.getElementById('edit-cat').value,
+        name: document.getElementById('edit-name').value,
+        offer: document.getElementById('edit-offer').value,
+        price: document.getElementById('edit-price').value,
+        stock: document.getElementById('edit-stock').value,
+        comments: document.getElementById('edit-comments').value
+    };
 
-        if (this.editingId) {
-            await sb.from('products').update(payload).eq('id', this.editingId);
-        } else {
-            await sb.from('products').insert([payload]);
-        }
-        this.closeModal();
-        this.init(); // Refresh data
-    },
+    if (this.editingId) {
+        await sb.from('products').update(payload).eq('id', this.editingId);
+    } else {
+        await sb.from('products').insert([payload]);
+    }
+    
+    this.closeModal();
+    
+    // This is the important part:
+    // We re-run init() to fetch the fresh data from Supabase
+    // which will then trigger processCategories() and show your new category!
+    await this.init(); 
+},
 
     async deleteProduct() {
         if (confirm("Permanently delete this item?")) {
