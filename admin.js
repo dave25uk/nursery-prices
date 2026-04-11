@@ -149,18 +149,21 @@ async saveProduct() {
         comments: document.getElementById('edit-comments').value
     };
 
+    let result;
     if (this.editingId) {
-        await sb.from('products').update(payload).eq('id', this.editingId);
+        result = await sb.from('products').update(payload).eq('id', this.editingId);
     } else {
-        await sb.from('products').insert([payload]);
+        result = await sb.from('products').insert([payload]);
     }
-    
-    this.closeModal();
-    
-    // This is the important part:
-    // We re-run init() to fetch the fresh data from Supabase
-    // which will then trigger processCategories() and show your new category!
-    await this.init(); 
+
+    if (result.error) {
+        console.error("SAVE ERROR:", result.error);
+        alert("Error saving: " + result.error.message);
+    } else {
+        console.log("Save successful!");
+        this.closeModal();
+        await this.init(); 
+    }
 },
 
     async deleteProduct() {
