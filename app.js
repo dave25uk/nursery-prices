@@ -106,10 +106,14 @@ renderHome() {
     this.renderSidebar();
 },
 
-    renderCategory(cat) {
+renderCategory(cat) {
         this.currentView = cat;
         const filtered = this.data.filter(p => p.category === cat).sort((a,b) => a.name.localeCompare(b.name));
         this.renderList(filtered);
+        
+        // Update the A-Z rail to only show letters in THIS category
+        this.renderAZ(filtered); 
+        
         document.getElementById('az-rail').style.display = 'flex';
         this.renderSidebar();
     },
@@ -147,7 +151,7 @@ renderList(products) {
     container.scrollTop = 0;
 },
 
-    handleSearch() {
+handleSearch() {
         const q = document.getElementById('main-search').value.toLowerCase();
         if (!q) { this.renderHome(); return; }
         this.currentView = 'search';
@@ -155,17 +159,23 @@ renderList(products) {
             p.name.toLowerCase().includes(q) || (p.tags && p.tags.toLowerCase().includes(q))
         ).sort((a,b) => a.name.localeCompare(b.name));
         this.renderList(results);
+        
+        // Update the A-Z rail for search results
+        this.renderAZ(results); 
+        
         document.getElementById('az-rail').style.display = 'flex';
         this.renderSidebar();
     },
 
-renderAZ() {
+renderAZ(products) {
         const rail = document.getElementById('az-rail');
         if (!rail) return;
 
-        // 1. Find which letters actually have products in your database
+        // Use the provided product list (filtered) or fallback to all data
+        const listToScan = products || this.data;
+
         const activeLetters = new Set(
-            this.data
+            listToScan
                 .filter(p => p.name) 
                 .map(p => p.name.trim().charAt(0).toUpperCase())
         );
@@ -174,13 +184,10 @@ renderAZ() {
         
         rail.innerHTML = alpha.map(l => {
             const hasItems = activeLetters.has(l);
-            
             if (hasItems) {
-                // Letter exists: Make it green and clickable
                 return `<div style="cursor:pointer; padding:2px; color:var(--nursery-green);" 
                              onclick="app.scrollToLetter('${l}')">${l}</div>`;
             } else {
-                // Letter doesn't exist: Make it grey and unclickable
                 return `<div style="padding:2px; color:#ccc; cursor:default; pointer-events:none;">${l}</div>`;
             }
         }).join("");
