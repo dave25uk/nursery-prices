@@ -14,7 +14,6 @@ const app = {
             this.data = JSON.parse(cache);
             this.refreshState();
         }
-
         try {
             const { data, error } = await sb.from('products').select('*');
             if (!error && data) {
@@ -23,7 +22,6 @@ const app = {
                 this.refreshState();
             }
         } catch (e) { console.error(e); }
-        
         this.renderAZ();
         this.injectModal();
     },
@@ -43,10 +41,9 @@ const app = {
         this.categories.forEach(cat => {
             html += `<button class="nav-btn ${this.currentView === cat ? 'active' : ''}" onclick="app.renderCategory('${cat}')">${cat}</button>`;
         });
-        html += `
-            <div style="margin-top:auto; padding-top:20px; border-top:1px solid #ddd;">
-                <button class="nav-btn ${this.currentView === 'admin' ? 'active' : ''}" onclick="app.renderAdminList()" style="background:#f8f9fa; border: 1px solid #333;">⚙️ MANAGEMENT</button>
-            </div>`;
+        html += `<div style="margin-top:auto; padding-top:20px; border-top:1px solid #ddd;">
+                    <button class="nav-btn ${this.currentView === 'admin' ? 'active' : ''}" onclick="app.renderAdminList()" style="background:#f8f9fa; border: 1px solid #333;">⚙️ MANAGEMENT</button>
+                 </div>`;
         nav.innerHTML = html;
     },
 
@@ -73,13 +70,10 @@ const app = {
         this.currentView = 'admin';
         document.getElementById('az-rail').style.display = 'none';
         const sorted = [...this.data].sort((a,b) => (a.category||"").localeCompare(b.category||"") || a.name.localeCompare(b.name));
-        
-        const headerHtml = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        const headerHtml = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2 style="margin:0;">Management Mode</h2>
                 <button class="nav-btn" onclick="app.openEditModal(null)" style="background:var(--nursery-green); color:white;">+ ADD NEW</button>
             </div>`;
-        
         this.renderList(sorted, true, headerHtml);
         this.renderSidebar();
     },
@@ -89,23 +83,24 @@ const app = {
         let html = prefixHtml + '<div class="product-list">';
         
         products.forEach(p => {
-            const s = (p.stock || "").toLowerCase();
-            const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
+            const catClass = `cat-${(p.category || "").toLowerCase().replace(/\s+/g, '-')}`;
             
             html += `
-                <div class="product-card ${bgClass}">
-                    <div class="prod-info">
+                <div class="product-card ${catClass}">
+                    <div class="card-top-row">
                         <div class="prod-name">${p.name}</div>
-                        ${isAdmin ? `<div style="font-size:11px; color:#888; font-weight:bold; text-transform:uppercase;">${p.category}</div>` : ''}
-                        <div class="status-line">
-                            ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
-                            ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
+                        ${p.offer ? `<div class="prod-offer">${p.offer}</div>` : ''}
+                        <div class="prod-price">${p.price || ''}</div>
+                        ${isAdmin ? `<button class="nav-btn" style="margin-left:10px; padding:8px;" onclick="app.openEditModal(${p.id})">EDIT</button>` : ''}
+                    </div>
+                    
+                    ${(p.stock || p.comments) ? `
+                        <div class="card-bottom-row">
+                            ${p.stock ? `<span class="stock-alert">${p.stock}</span>` : ''}
+                            ${p.comments ? `<span class="prod-comments">${p.comments}</span>` : ''}
+                            ${isAdmin ? `<span class="admin-badge">${p.category}</span>` : ''}
                         </div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <div class="prod-price">${p.price || 'TBC'}</div>
-                        ${isAdmin ? `<button class="nav-btn" onclick="app.openEditModal(${p.id})">EDIT</button>` : ''}
-                    </div>
+                    ` : ''}
                 </div>`;
         });
         
@@ -113,38 +108,24 @@ const app = {
         container.scrollTop = 0;
     },
 
-    // --- MODAL LOGIC ---
-
     injectModal() {
         if(document.getElementById('edit-modal')) return;
         const modalHtml = `
             <div id="edit-modal" class="modal-overlay">
                 <div class="modal-content">
-                    <h3 id="modal-title" style="margin-top:0; color:var(--nursery-green);">Edit Product</h3>
-                    <div class="modal-field">
-                        <label>Category</label>
-                        <input type="text" id="edit-cat" list="cat-list">
-                    </div>
-                    <div class="modal-field">
-                        <label>Plant Name</label>
-                        <input type="text" id="edit-name">
-                    </div>
-                    <div class="modal-field">
-                        <label>Price</label>
-                        <input type="text" id="edit-price">
-                    </div>
-                    <div class="modal-field">
-                        <label>Stock Status</label>
+                    <h3 id="modal-title" style="margin-top:0; color:var(--nursery-green);">Product Details</h3>
+                    <div class="modal-field"><label>Category</label><input type="text" id="edit-cat" list="cat-list"></div>
+                    <div class="modal-field"><label>Plant Name</label><input type="text" id="edit-name"></div>
+                    <div class="modal-field"><label>Offer (e.g. 3 for £12)</label><input type="text" id="edit-offer"></div>
+                    <div class="modal-field"><label>Price</label><input type="text" id="edit-price"></div>
+                    <div class="modal-field"><label>Stock Alert</label>
                         <select id="edit-stock">
-                            <option value="">In Stock</option>
+                            <option value="">Standard (In Stock)</option>
                             <option value="Low Stock">Low Stock</option>
                             <option value="Out of Stock">Out of Stock</option>
                         </select>
                     </div>
-                    <div class="modal-field">
-                        <label>Comments</label>
-                        <input type="text" id="edit-comments">
-                    </div>
+                    <div class="modal-field"><label>Comments</label><input type="text" id="edit-comments"></div>
                     <div class="modal-actions">
                         <button class="nav-btn btn-cancel" onclick="app.closeModal()">Cancel</button>
                         <button class="nav-btn btn-save" onclick="app.saveProduct()">Save Changes</button>
@@ -158,9 +139,6 @@ const app = {
     openEditModal(id) {
         this.editingId = id;
         const modal = document.getElementById('edit-modal');
-        const delBtn = document.getElementById('del-btn');
-        
-        // Update datalist for categories
         document.getElementById('cat-list').innerHTML = this.categories.map(c => `<option value="${c}">`).join('');
 
         if (id) {
@@ -168,18 +146,20 @@ const app = {
             document.getElementById('modal-title').innerText = "Edit Product";
             document.getElementById('edit-cat').value = p.category || '';
             document.getElementById('edit-name').value = p.name || '';
+            document.getElementById('edit-offer').value = p.offer || '';
             document.getElementById('edit-price').value = p.price || '';
             document.getElementById('edit-stock').value = p.stock || '';
             document.getElementById('edit-comments').value = p.comments || '';
-            delBtn.style.display = "block";
+            document.getElementById('del-btn').style.display = "block";
         } else {
             document.getElementById('modal-title').innerText = "Add New Product";
             document.getElementById('edit-cat').value = '';
             document.getElementById('edit-name').value = '';
+            document.getElementById('edit-offer').value = '';
             document.getElementById('edit-price').value = '£0.00';
             document.getElementById('edit-stock').value = '';
             document.getElementById('edit-comments').value = '';
-            delBtn.style.display = "none";
+            document.getElementById('del-btn').style.display = "none";
         }
         modal.style.display = "flex";
     },
@@ -190,22 +170,19 @@ const app = {
         const payload = {
             category: document.getElementById('edit-cat').value,
             name: document.getElementById('edit-name').value,
+            offer: document.getElementById('edit-offer').value,
             price: document.getElementById('edit-price').value,
             stock: document.getElementById('edit-stock').value,
             comments: document.getElementById('edit-comments').value
         };
-
-        if (this.editingId) {
-            await sb.from('products').update(payload).eq('id', this.editingId);
-        } else {
-            await sb.from('products').insert([payload]);
-        }
+        if (this.editingId) await sb.from('products').update(payload).eq('id', this.editingId);
+        else await sb.from('products').insert([payload]);
         this.closeModal();
         this.init(); 
     },
 
     async deleteProduct() {
-        if (confirm("Are you sure you want to delete this?")) {
+        if (confirm("Delete this plant permanently?")) {
             await sb.from('products').delete().eq('id', this.editingId);
             this.closeModal();
             this.init();
@@ -216,7 +193,7 @@ const app = {
         const q = document.getElementById('main-search').value.toLowerCase();
         if (!q) { this.renderHome(); return; }
         this.currentView = 'search';
-        const res = this.data.filter(p => p.name.toLowerCase().includes(q) || (p.tags && p.tags.toLowerCase().includes(q)));
+        const res = this.data.filter(p => p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q)));
         this.renderList(res, false, `<h2 style="margin-top:0;">Search Results</h2>`);
         document.getElementById('az-rail').style.display = 'flex';
         this.renderSidebar();
