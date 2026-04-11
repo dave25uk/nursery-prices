@@ -28,15 +28,27 @@ const app = {
         else this.renderCategory(this.currentView);
     },
 
-    renderSidebar() {
-        const nav = document.getElementById('sidebar-nav');
-        let html = `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()">VIEW ALL</button>`;
-        html += `<button class="nav-btn" onclick="app.openModal(null)" style="border: 2px dashed var(--nursery-green);">+ ADD NEW</button>`;
-        this.categories.forEach(cat => {
-            html += `<button class="nav-btn ${this.currentView === cat ? 'active' : ''}" onclick="app.renderCategory('${cat}')">${cat}</button>`;
-        });
-        nav.innerHTML = html;
-    },
+renderSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    
+    // START with the Back to Shop button so it's always at the top
+    let html = `
+        <button class="nav-btn" onclick="window.location.href='index.html'" 
+                style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
+            ← BACK TO SHOP
+        </button>`;
+
+    // Add the "View All" and "Add New" buttons
+    html += `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()">VIEW ALL</button>`;
+    html += `<button class="nav-btn" onclick="app.openModal(null)" style="border: 2px dashed var(--nursery-green);">+ ADD NEW</button>`;
+    
+    // Add the categories
+    this.categories.forEach(cat => {
+        html += `<button class="nav-btn ${this.currentView === cat ? 'active' : ''}" onclick="app.renderCategory('${cat}')">${cat}</button>`;
+    });
+    
+    nav.innerHTML = html;
+},
 
     renderAll() {
         this.currentView = 'all';
