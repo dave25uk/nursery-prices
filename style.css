@@ -73,16 +73,18 @@ body, html {
     font-weight: 800; text-align: left;
     cursor: pointer; font-size: 16px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+	border-left: 10px solid #ccc; /* Matches the thick look of product cards */
+    transition: all 0.2s ease;
 }
 
 /* Sidebar Navigation Active States */
-.nav-btn.active.cat-basket-plants { background-color: #e91e63; border-color: #e91e63; color: #fff; }
-.nav-btn.active.cat-bedding { background-color: #ff9800; border-color: #ff9800; color: #fff; }
-.nav-btn.active.cat-compost { background-color: #795548; border-color: #795548; color: #fff; }
-.nav-btn.active.cat-melcourt-stone-etc { background-color: #607d8b; border-color: #607d8b; color: #fff; }
-.nav-btn.active.cat-perennials { background-color: #9c27b0; border-color: #9c27b0; color: #fff; }
-.nav-btn.active.cat-shrubs-and-trees { background-color: #2e7d32; border-color: #2e7d32; color: #fff; }
-.nav-btn.active.cat-vegetables { background-color: #8bc34a; border-color: #8bc34a; color: #fff; }
+.nav-btn.active.cat-basket-plants { background-color: #e91e63; color: #fff; }
+.nav-btn.active.cat-bedding { background-color: #ff9800; color: #fff; }
+.nav-btn.active.cat-compost { background-color: #795548; color: #fff; }
+.nav-btn.active.cat-melcourt-stone-etc { background-color: #607d8b; color: #fff; }
+.nav-btn.active.cat-perennials { background-color: #9c27b0; color: #fff; }
+.nav-btn.active.cat-shrubs-and-trees { background-color: #2e7d32; color: #fff; }
+.nav-btn.active.cat-vegetables { background-color: #8bc34a; color: #fff; }
 
 /* NEW FALLBACK: Use nursery green for any active category button not listed above */
 .nav-btn.active[class*="cat-"] { background-color: var(--nursery-green); border-color: var(--nursery-green); color: #fff; }
@@ -106,13 +108,13 @@ body, html {
 
 /* Category Specific Borders */
 .product-card[class*="cat-"] { border-left-color: var(--nursery-green); } /* Default Green for NEW categories */
-.cat-basket-plants { border-left-color: #e91e63; }       /* Pink */
-.cat-bedding { border-left-color: #ff9800; }             /* Orange */
-.cat-compost { border-left-color: #795548; }             /* Brown */
-.cat-melcourt-stone-etc { border-left-color: #607d8b; }  /* Slate Blue */
-.cat-perennials { border-left-color: #9c27b0; }          /* Purple */
-.cat-shrubs-and-trees { border-left-color: #2e7d32; }    /* Dark Green */
-.cat-vegetables { border-left-color: #8bc34a; }          /* Light Green */
+.cat-basket-plants { border-left-color: #e91e63; }
+.cat-bedding { border-left-color: #ff9800; }
+.cat-compost { border-left-color: #795548; }
+.cat-melcourt-stone-etc { border-left-color: #607d8b; }
+.cat-perennials { border-left-color: #9c27b0; }
+.cat-shrubs-and-trees { border-left-color: #2e7d32; }
+.cat-vegetables { border-left-color: #8bc34a; }
 
 
 .prod-name { font-size: 20px; font-weight: 800; color: #111; }
@@ -161,4 +163,9 @@ body, html {
     text-align: center;
     cursor: pointer;
     text-transform: uppercase;
+	
+}
+.nav-btn[onclick*="index.html"], 
+.nav-btn[onclick*="openModal(null)"] {
+    border-left: 1px solid var(--border-color); /* Keeps these buttons simple */
 }
