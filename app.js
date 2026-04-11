@@ -93,15 +93,15 @@ renderList(products) {
         html += `
             <div class="product-card ${bgClass} ${catClass}">
                 <div style="width: 100%;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div style="display: flex; align-items: center; width: 100%; gap: 10px;">
                         
-                        <div class="prod-name" style="flex: 1;">${p.name}</div>
+                        <div class="prod-name" style="flex: 0 1 auto; white-space: nowrap;">${p.name}</div>
                         
                         <div style="flex: 1; text-align: center;">
-                            ${p.offer ? `<span style="color: #e65100; font-weight: 700; font-size: 16px;">${p.offer}</span>` : ''}
+                            ${p.offer ? `<span style="color: #e65100; font-weight: 700; font-size: 16px; display: inline-block;">${p.offer}</span>` : ''}
                         </div>
                         
-                        <div style="flex: 1; display: flex; justify-content: flex-end;">
+                        <div style="flex: 0 0 auto;">
                             <div class="prod-price">${p.price}</div>
                         </div>
                     </div>
