@@ -61,39 +61,38 @@ body, html {
 .nav-btn:active { transform: scale(0.98); }
 .nav-btn.active { background-color: var(--nursery-green); color: #fff; }
 
-/* Product Area */
-.content { overflow-y: auto; padding: 25px 50px 25px 25px; }
-
+/* Product Card Base */
 .product-card {
-    background: #fff; border: 1px solid var(--border-color);
+    background: #fff; /* Standard Fill Color */
+    border: 1px solid var(--border-color);
     border-radius: 12px; padding: 15px 18px;
     display: flex; flex-direction: column; gap: 8px;
-    border-left: 10px solid #ccc; margin-bottom: 12px;
+    border-left: 12px solid #ccc; /* Default border */
+    margin-bottom: 12px;
     scroll-margin-top: 20px;
 }
 
-/* Category Color Borders */
-.cat-shrubs { border-left-color: #4caf50; background-color: #f1f8e9; }
-.cat-trees { border-left-color: #795548; background-color: #efebe9; }
-.cat-perennials { border-left-color: #9c27b0; background-color: #f3e5f5; }
-.cat-roses { border-left-color: #e91e63; background-color: #fce4ec; }
-.cat-climbers { border-left-color: #00bcd4; background-color: #e0f7fa; }
+/* Specific Category Border Colours */
+.cat-basket-plants { border-left-color: #e91e63; } /* Pink */
+.cat-bedding { border-left-color: #ff9800; }       /* Orange */
+.cat-compost { border-left-color: #795548; }       /* Brown */
+.cat-melcourt-stone-etc { border-left-color: #607d8b; } /* Slate */
+.cat-perennials { border-left-color: #9c27b0; }    /* Purple */
+.cat-shrubs-and-trees { border-left-color: #2e7d32; } /* Dark Green */
+.cat-vegetables { border-left-color: #8bc34a; }    /* Light Green */
 
-/* Layout Rows */
+/* Card Layout */
 .card-top-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .card-bottom-row { display: flex; gap: 12px; align-items: center; font-size: 14px; }
 
 .prod-name { font-size: 20px; font-weight: 800; color: #1a1a1a; flex: 1; }
-.prod-offer { color: var(--offer-orange); font-weight: 700; font-size: 16px; margin: 0 15px; white-space: nowrap; }
+.prod-offer { color: var(--offer-orange); font-weight: 700; font-size: 16px; margin: 0 15px; }
 .prod-price { font-size: 19px; font-weight: 800; color: #1a1a1a; min-width: 80px; text-align: right; }
 
 .stock-alert { color: #d32f2f; font-weight: 900; text-transform: uppercase; font-size: 12px; }
 .prod-comments { color: #666; font-style: italic; }
 
-/* Management Styles */
-.admin-badge { font-size: 10px; background: #eee; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-
-/* Modal */
+/* Modal & Other UI elements remain the same */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); display: none;
