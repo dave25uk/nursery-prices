@@ -26,46 +26,56 @@ verifyPin() {
     }
 },
 
- async init() {
-        const cache = localStorage.getItem('nursery_data');
-        if (cache) {
-            this.data = JSON.parse(cache);
-            this.lastUpdated = localStorage.getItem('last_updated_time') || '';
-            this.processCategories();
-            this.renderSidebar();
-            this.renderHome();
-        }
+async init() {
+    const cache = localStorage.getItem('nursery_data');
+    if (cache) {
+        this.data = JSON.parse(cache);
+        this.lastUpdated = localStorage.getItem('last_updated_time') || '';
+        this.processCategories();
+        this.renderSidebar();
+        this.renderHome();
+    }
 
-        try {
-            const { data, error } = await sb.from('products').select('*');
-            if (!error && data) {
-                this.data = data;
-                
-                // Create a nice date string (e.g., "11 April 2026")
-                const now = new Date();
-                this.lastUpdated = now.toLocaleDateString('en-GB', { 
+    try {
+        const { data, error } = await sb.from('products').select('*');
+        if (!error && data) {
+            this.data = data;
+
+            // 1. Calculate the actual last update from the data
+            const latestUpdate = data.reduce((latest, item) => {
+                const itemDate = new Date(item.updated_at);
+                return itemDate > latest ? itemDate : latest;
+            }, new Date(0));
+
+            // 2. Format the date only if we found a valid timestamp
+            if (latestUpdate.getTime() > 0) {
+                this.lastUpdated = latestUpdate.toLocaleDateString('en-GB', { 
                     day: 'numeric', 
                     month: 'long', 
                     year: 'numeric' 
                 });
-
-                localStorage.setItem('nursery_data', JSON.stringify(data));
-                localStorage.setItem('last_updated_time', this.lastUpdated);
-                
-                this.processCategories();
-                this.renderSidebar();
-                if (this.currentView === 'home') this.renderHome();
-                else if (this.currentView === 'search') this.handleSearch();
-                else this.renderCategory(this.currentView);
+            } else {
+                this.lastUpdated = 'No updates recorded';
             }
-        } catch (e) { console.error("Database error", e); }
-        
-        this.renderAZ();
-    },
 
-    processCategories() {
-        this.categories = [...new Set(this.data.map(p => p.category))].sort();
-    },
+            // 3. Save to storage
+            localStorage.setItem('nursery_data', JSON.stringify(data));
+            localStorage.setItem('last_updated_time', this.lastUpdated);
+            
+            this.processCategories();
+            this.renderSidebar();
+            
+            // Refresh view
+            if (this.currentView === 'home') this.renderHome();
+            else if (this.currentView === 'search') this.handleSearch();
+            else this.renderCategory(this.currentView);
+        }
+    } catch (e) { 
+        console.error("Database error", e); 
+    }
+    
+    this.renderAZ();
+},
 
 renderSidebar() {
     const nav = document.getElementById('sidebar-nav');
