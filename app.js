@@ -26,42 +26,57 @@ verifyPin() {
     }
 },
 
- async init() {
-        const cache = localStorage.getItem('nursery_data');
-        if (cache) {
-            this.data = JSON.parse(cache);
-            this.lastUpdated = localStorage.getItem('last_updated_time') || '';
-            this.processCategories();
-            this.renderSidebar();
-            this.renderHome();
-        }
+async init() {
+    const cache = localStorage.getItem('nursery_data');
+    if (cache) {
+        this.data = JSON.parse(cache);
+        this.lastUpdated = localStorage.getItem('last_updated_time') || '';
+        this.processCategories();
+        this.renderSidebar();
+        this.renderHome();
+    }
 
-        try {
-            const { data, error } = await sb.from('products').select('*');
-            if (!error && data) {
-                this.data = data;
-                
-                // Create a nice date string (e.g., "11 April 2026")
-                const now = new Date();
-                this.lastUpdated = now.toLocaleDateString('en-GB', { 
+    try {
+        const { data, error } = await sb.from('products').select('*');
+        if (!error && data) {
+            this.data = data;
+
+            // 1. Find the newest date, but ONLY from items that have an updated_at value
+            const validDates = data
+                .map(p => p.updated_at)
+                .filter(d => d != null) // This prevents the crash
+                .map(d => new Date(d));
+
+            if (validDates.length > 0) {
+                const latestUpdate = new Date(Math.max(...validDates));
+                this.lastUpdated = latestUpdate.toLocaleDateString('en-GB', { 
                     day: 'numeric', 
                     month: 'long', 
                     year: 'numeric' 
                 });
-
-                localStorage.setItem('nursery_data', JSON.stringify(data));
-                localStorage.setItem('last_updated_time', this.lastUpdated);
-                
-                this.processCategories();
-                this.renderSidebar();
-                if (this.currentView === 'home') this.renderHome();
-                else if (this.currentView === 'search') this.handleSearch();
-                else this.renderCategory(this.currentView);
+            } else {
+                // Fallback if the database column is completely empty
+                this.lastUpdated = 'Pending first update...';
             }
-        } catch (e) { console.error("Database error", e); }
-        
-        this.renderAZ();
-    },
+
+            // 2. Save to storage
+            localStorage.setItem('nursery_data', JSON.stringify(data));
+            localStorage.setItem('last_updated_time', this.lastUpdated);
+            
+            this.processCategories();
+            this.renderSidebar();
+            
+            // Refresh view
+            if (this.currentView === 'home') this.renderHome();
+            else if (this.currentView === 'search') this.handleSearch();
+            else this.renderCategory(this.currentView);
+        }
+    } catch (e) { 
+        console.error("Database error", e); 
+    }
+    
+    this.renderAZ();
+},
 
     processCategories() {
         this.categories = [...new Set(this.data.map(p => p.category))].sort();
