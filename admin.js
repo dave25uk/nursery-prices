@@ -10,12 +10,10 @@ const app = {
 
     lockScroll() {
         document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
     },
 
     unlockScroll() {
         document.body.style.overflow = '';
-        document.body.style.position = '';
     },
 
     async init() {
@@ -38,56 +36,21 @@ const app = {
         else this.renderCategory(this.currentView);
     },
 
-renderSidebar() {
-    const nav = document.getElementById('sidebar-nav');
-    
-    // 1. Navigation & Action Buttons (The "Top" section)
-    let html = `
-        <button class="nav-btn" onclick="window.location.href='index.html'" 
-                style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
-            ← BACK TO SHOP
-        </button>
-        <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
-            + NEW PRODUCT
-        </button>
-        <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
-            + NEW CATEGORY
-        </button>
-        <button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()" style="margin-bottom: 10px;">
-            VIEW ALL STOCK
-        </button>
-    `;
+    renderSidebar() {
+        const listContainer = document.getElementById('sidebar-nav-list');
+        if (!listContainer) return;
 
-    // 2. Category List Container
-    html += `<div class="sidebar-nav-links" style="display: flex; flex-direction: column; gap: 12px; padding-bottom: 60px;">`;
+        let html = '';
+        const allActive = this.currentView === 'all' ? 'active' : '';
+        html += `<button class="nav-btn ${allActive}" onclick="app.renderAll()" style="margin-bottom: 10px;">VIEW ALL STOCK</button>`;
 
-    this.categories.forEach(cat => {
-        const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-        const isActive = this.currentView === cat ? 'active' : '';
+        this.categories.forEach(cat => {
+            const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+            const isActive = this.currentView === cat ? 'active' : '';
+            html += `<button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">${cat.toUpperCase()}</button>`;
+        });
         
-        html += `
-            <button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
-                ${cat.toUpperCase()}
-            </button>`;
-    });
-    
-    html += `</div>`;
-    nav.innerHTML = html;
-}
-
-
-    addNewCategory() {
-        const newCat = prompt("Enter the name for the new category:");
-        if (newCat && newCat.trim() !== "") {
-            const formattedCat = newCat.trim();
-            this.openModal(null);
-            const catSelect = document.getElementById('edit-cat');
-            const option = document.createElement("option");
-            option.value = formattedCat;
-            option.text = formattedCat;
-            catSelect.add(option);
-            catSelect.value = formattedCat;
-        }
+        listContainer.innerHTML = html;
     },
 
     renderAll() {
@@ -112,16 +75,16 @@ renderSidebar() {
             const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
             const catClass = `cat-${(p.category || "none").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
             html += `
-                <div class="product-card ${bgClass} ${catClass}" onclick="app.openModal(${p.id})" style="cursor:pointer;">
+                <div class="product-card ${bgClass} ${catClass}" onclick="app.openModal(${p.id})">
                     <div style="width: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <div class="prod-name" style="padding-right: 20px;">${p.name}</div>
-                            <div style="display: flex; align-items: center; gap: 20px; flex-shrink: 0;">
-                                ${p.offer ? `<span style="color: #e65100; font-weight: 700; font-size: 16px; white-space: nowrap;">${p.offer}</span>` : ''}
+                            <div class="prod-name">${p.name}</div>
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                ${p.offer ? `<span style="color: #e65100; font-weight: 700;">${p.offer}</span>` : ''}
                                 <div class="prod-price">${p.price}</div>
                             </div>
                         </div>
-                        <div class="status-line" style="margin-top: 10px;">
+                        <div class="status-line">
                             ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
                             ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
                         </div>
@@ -148,18 +111,7 @@ renderSidebar() {
             document.getElementById('edit-price').value = p.price || '';
             document.getElementById('edit-comments').value = p.comments || '';
             document.getElementById('del-btn').style.display = "block";
-
-            const stockSelect = document.getElementById('edit-stock');
-            const dbValue = (p.stock || "").trim();
-            let matched = false;
-            for (let i = 0; i < stockSelect.options.length; i++) {
-                if (stockSelect.options[i].value.toLowerCase() === dbValue.toLowerCase()) {
-                    stockSelect.selectedIndex = i;
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) stockSelect.selectedIndex = 0;
+            document.getElementById('edit-stock').value = p.stock || '';
         } else {
             document.getElementById('modal-title').innerText = "Add New Product";
             document.getElementById('edit-cat').value = this.categories[0] || '';
@@ -170,8 +122,7 @@ renderSidebar() {
             document.getElementById('edit-comments').value = '';
             document.getElementById('del-btn').style.display = "none";
         }
-        modal.style.display = "block"; // Changed to block for scroll behavior
-        modal.scrollTop = 0;
+        modal.style.display = "block";
     },
 
     closeModal() {
@@ -188,28 +139,26 @@ renderSidebar() {
             stock: document.getElementById('edit-stock').value,
             comments: document.getElementById('edit-comments').value
         };
-
-        let result;
-        if (this.editingId) {
-            result = await sb.from('products').update(payload).eq('id', this.editingId);
-        } else {
-            result = await sb.from('products').insert([payload]);
-        }
-
-        if (result.error) {
-            console.error("SAVE ERROR:", result.error);
-            alert("Error saving: " + result.error.message);
-        } else {
-            this.closeModal();
-            await this.init(); 
-        }
+        if (this.editingId) await sb.from('products').update(payload).eq('id', this.editingId);
+        else await sb.from('products').insert([payload]);
+        this.closeModal();
+        await this.init();
     },
 
     async deleteProduct() {
-        if (confirm("Permanently delete this item?")) {
+        if (confirm("Delete this item?")) {
             await sb.from('products').delete().eq('id', this.editingId);
             this.closeModal();
             this.init();
+        }
+    },
+
+    addNewCategory() {
+        const newCat = prompt("New category name:");
+        if (newCat) {
+            this.categories.push(newCat);
+            this.openModal(null);
+            document.getElementById('edit-cat').value = newCat;
         }
     },
 
