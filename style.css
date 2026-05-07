@@ -1,4 +1,4 @@
-:root {
+    :root {
     --nursery-green: #2e7d32;
     --sidebar-width: 280px;
     --header-height: 85px;
@@ -103,6 +103,29 @@ body, html {
 .nav-btn.active.cat-shrubs-and-trees { background-color: #2e7d32; color: #fff; }
 .nav-btn.active.cat-vegetables { background-color: #8bc34a; color: #fff; }
 .nav-btn.active[class*="cat-"] { background-color: var(--nursery-green); color: #fff; }
+
+.mgmt-btn {
+    margin-top: 20px;
+    padding: 15px;
+    background: #eee;
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    color: #666;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    text-transform: uppercase;
+    /* This ensures it doesn't shrink when categories are added */
+    flex-shrink: 0;
+}
+
+/* Make it look "pressed" when tapped */
+.mgmt-btn:active {
+    background: #ddd;
+    transform: translateY(1px);
+}
+
 
 .content { 
     flex: 1;
