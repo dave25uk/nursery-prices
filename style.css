@@ -53,19 +53,19 @@ body, html {
 .sidebar {
     background: #fff;
     border-right: 2px solid var(--border-color);
-    overflow-y: auto;
     padding: 15px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* Use 100% of the available grid space rather than vh, 
-       which is more stable on Fire Tablets */
-    height: 100%; 
-    /* This ensures that even at the very bottom of the scroll, 
-       there is clear space above the tablet's navigation bar */
-    padding-bottom: 80px; 
+    /* Force the height based on the viewport minus header and tablet bar */
+    height: calc(100vh - var(--header-height) - 20px); 
+    overflow-y: auto;
+    /* Important for smooth scrolling on tablets */
     -webkit-overflow-scrolling: touch;
+    /* This ensures buttons don't get hidden behind the tablet nav bar */
+    padding-bottom: 100px; 
 }
+
 
 .sidebar-nav-links {
     display: flex;
