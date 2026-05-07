@@ -16,20 +16,28 @@
             </div>
         </header>
 
-        <nav class="sidebar" id="sidebar-nav">
-            <button class="nav-btn" onclick="window.location.href='index.html'" style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
-                ← BACK TO SHOP
-            </button>
-            <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
-                + NEW PRODUCT
-            </button>
-            <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
-                + NEW CATEGORY
-            </button>
-            <div class="sidebar-nav-links" id="sidebar-nav-list"></div>
-        </nav>
+        <div class="main-wrapper">
+            <nav class="sidebar" id="sidebar-nav">
+                <button class="nav-btn" onclick="window.location.href='index.html'" 
+                        style="margin-bottom: 20px; background: #444; color: #fff; width: 100%; flex-shrink: 0;">
+                    ← BACK TO SHOP
+                </button>
+                
+                <button class="nav-btn" onclick="app.openModal(null)" 
+                        style="border-left: 1px solid var(--border-color) !important; flex-shrink: 0;">
+                    + NEW PRODUCT
+                </button>
+                
+                <button class="nav-btn" onclick="app.addNewCategory()" 
+                        style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px; flex-shrink: 0;">
+                    + NEW CATEGORY
+                </button>
 
-        <main class="content" id="main-content"></main>
+                <div class="sidebar-nav-links" id="sidebar-nav-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </nav>
+
+            <main class="content" id="main-content"></main>
+        </div>
     </div>
 
     <div id="edit-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 0;">
