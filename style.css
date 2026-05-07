@@ -58,8 +58,15 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    height: calc(100vh - var(--header-height) - 60px);
+    /* Use 100% of the available grid space rather than vh, 
+       which is more stable on Fire Tablets */
+    height: 100%; 
+    /* This ensures that even at the very bottom of the scroll, 
+       there is clear space above the tablet's navigation bar */
+    padding-bottom: 80px; 
+    -webkit-overflow-scrolling: touch;
 }
+
 .sidebar-nav-links {
     display: flex;
     flex-direction: column;
