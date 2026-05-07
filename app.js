@@ -6,167 +6,172 @@ const app = {
     data: [],
     categories: [],
     currentView: 'home',
-	lastUpdated: '', // New variable to store the date
-	openManagement() {
-    // Instead of prompt, we show our custom modal
-    const modal = document.getElementById('pin-modal');
-    const field = document.getElementById('pin-field');
-    field.value = ''; // Clear previous attempt
-    modal.style.display = 'flex';
-    field.focus(); // Auto-focus so the numeric keypad pops up immediately
-},
+    lastUpdated: '',
 
-verifyPin() {
-    const pin = document.getElementById('pin-field').value;
-    if (pin === "123456") {
-        window.location.href = "management.html";
-    } else {
-        alert("Incorrect PIN.");
-        document.getElementById('pin-field').value = '';
-    }
-},
+    // Fix for Fire Tablet viewport issues
+    lockScroll() {
+        document.body.style.overflow = 'hidden';
+        document.body.style.height = '100vh';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+    },
 
-async init() {
-    const cache = localStorage.getItem('nursery_data');
-    if (cache) {
-        this.data = JSON.parse(cache);
-        this.lastUpdated = localStorage.getItem('last_updated_time') || '';
-        this.processCategories();
-        this.renderSidebar();
-        this.renderHome();
-    }
+    unlockScroll() {
+        document.body.style.overflow = '';
+        document.body.style.height = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        window.scrollTo(0, 0);
+    },
 
-    try {
-        const { data, error } = await sb.from('products').select('*');
-        if (!error && data) {
-            this.data = data;
+    openManagement() {
+        const modal = document.getElementById('pin-modal');
+        const field = document.getElementById('pin-field');
+        field.value = '';
+        modal.style.display = 'flex';
+        this.lockScroll(); // Lock the screen to prevent background squash
+        field.focus();
+    },
 
-            // 1. Find the newest date, but ONLY from items that have an updated_at value
-            const validDates = data
-                .map(p => p.updated_at)
-                .filter(d => d != null) // This prevents the crash
-                .map(d => new Date(d));
+    verifyPin() {
+        const pin = document.getElementById('pin-field').value;
+        if (pin === "123456") {
+            this.unlockScroll(); // Reset screen before navigating
+            window.location.href = "management.html";
+        } else {
+            alert("Incorrect PIN.");
+            document.getElementById('pin-field').value = '';
+        }
+    },
 
-            if (validDates.length > 0) {
-                const latestUpdate = new Date(Math.max(...validDates));
-                this.lastUpdated = latestUpdate.toLocaleDateString('en-GB', { 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
-                });
-            } else {
-                // Fallback if the database column is completely empty
-                this.lastUpdated = 'Pending first update...';
-            }
-
-            // 2. Save to storage
-            localStorage.setItem('nursery_data', JSON.stringify(data));
-            localStorage.setItem('last_updated_time', this.lastUpdated);
-            
+    async init() {
+        const cache = localStorage.getItem('nursery_data');
+        if (cache) {
+            this.data = JSON.parse(cache);
+            this.lastUpdated = localStorage.getItem('last_updated_time') || '';
             this.processCategories();
             this.renderSidebar();
-            
-            // Refresh view
-            if (this.currentView === 'home') this.renderHome();
-            else if (this.currentView === 'search') this.handleSearch();
-            else this.renderCategory(this.currentView);
+            this.renderHome();
         }
-    } catch (e) { 
-        console.error("Database error", e); 
-    }
-    
-    this.renderAZ();
-},
+
+        try {
+            const { data, error } = await sb.from('products').select('*');
+            if (!error && data) {
+                this.data = data;
+
+                const validDates = data
+                    .map(p => p.updated_at)
+                    .filter(d => d != null)
+                    .map(d => new Date(d));
+
+                if (validDates.length > 0) {
+                    const latestUpdate = new Date(Math.max(...validDates));
+                    this.lastUpdated = latestUpdate.toLocaleDateString('en-GB', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                    });
+                } else {
+                    this.lastUpdated = 'Pending first update...';
+                }
+
+                localStorage.setItem('nursery_data', JSON.stringify(data));
+                localStorage.setItem('last_updated_time', this.lastUpdated);
+                
+                this.processCategories();
+                this.renderSidebar();
+                
+                if (this.currentView === 'home') this.renderHome();
+                else if (this.currentView === 'search') this.handleSearch();
+                else this.renderCategory(this.currentView);
+            }
+        } catch (e) { 
+            console.error("Database error", e); 
+        }
+        
+        this.renderAZ();
+    },
 
     processCategories() {
         this.categories = [...new Set(this.data.map(p => p.category))].sort();
     },
 
-renderSidebar() {
-    const nav = document.getElementById('sidebar-nav');
-    
-    // Home button gets a specific class
-    let html = `<button class="nav-btn home-btn ${this.currentView === 'home' ? 'active' : ''}" 
-                onclick="app.renderHome()">HOME</button>`;
-    
-    this.categories.forEach(cat => {
-        // Create the CSS-friendly class name (e.g., 'cat-perennials')
-        const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+    renderSidebar() {
+        const nav = document.getElementById('sidebar-nav');
+        let html = `<button class="nav-btn home-btn ${this.currentView === 'home' ? 'active' : ''}" 
+                    onclick="app.renderHome()">HOME</button>`;
         
-        // Add that class to the button
-        const isActive = this.currentView === cat ? 'active' : '';
+        this.categories.forEach(cat => {
+            const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+            const isActive = this.currentView === cat ? 'active' : '';
+            html += `<button class="nav-btn ${catClass} ${isActive}" 
+                     onclick="app.renderCategory('${cat}')">${cat.toUpperCase()}</button>`;
+        });
         
-        html += `<button class="nav-btn ${catClass} ${isActive}" 
-                 onclick="app.renderCategory('${cat}')">${cat.toUpperCase()}</button>`;
-    });
-    
-    nav.innerHTML = html;
-},
+        nav.innerHTML = html;
+    },
 
-renderHome() {
-    this.currentView = 'home';
-    document.getElementById('az-rail').style.display = 'none';
-    
-    const updateText = this.lastUpdated ? `Last updated: ${this.lastUpdated}` : '';
+    renderHome() {
+        this.currentView = 'home';
+        document.getElementById('az-rail').style.display = 'none';
+        
+        // Force reset the viewport height in case the tablet is still "squashed"
+        this.unlockScroll();
 
-    document.getElementById('main-content').innerHTML = `
-        <div class="home-view">
-            <img src="logo.png" alt="Logo">
-            <h2 style="color: var(--nursery-green); margin-top: 20px;">Price List 2026</h2>
-            <p style="color: #888; font-size: 14px; font-weight: 600; margin-top: 10px;">
-                ${updateText}
-            </p>
-        </div>
-    `;
-    this.renderSidebar();
-},
+        const updateText = this.lastUpdated ? `Last updated: ${this.lastUpdated}` : '';
 
-renderCategory(cat) {
+        document.getElementById('main-content').innerHTML = `
+            <div class="home-view">
+                <img src="logo.png" alt="Logo">
+                <h2 style="color: var(--nursery-green); margin-top: 20px;">Price List 2026</h2>
+                <p style="color: #888; font-size: 14px; font-weight: 600; margin-top: 10px;">
+                    ${updateText}
+                </p>
+            </div>
+        `;
+        this.renderSidebar();
+    },
+
+    renderCategory(cat) {
         this.currentView = cat;
         const filtered = this.data.filter(p => p.category === cat).sort((a,b) => a.name.localeCompare(b.name));
         this.renderList(filtered);
-        
-        // Update the A-Z rail to only show letters in THIS category
         this.renderAZ(filtered); 
-        
         document.getElementById('az-rail').style.display = 'flex';
         this.renderSidebar();
     },
 
-renderList(products) {
-    const container = document.getElementById('main-content');
-    let html = '<div class="product-list">';
-    
-    products.forEach(p => {
-        const s = (p.stock || "").toLowerCase();
-        const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
-        const catClass = `cat-${(p.category || "none").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+    renderList(products) {
+        const container = document.getElementById('main-content');
+        let html = '<div class="product-list">';
+        
+        products.forEach(p => {
+            const s = (p.stock || "").toLowerCase();
+            const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
+            const catClass = `cat-${(p.category || "none").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
 
-        html += `
-            <div class="product-card ${bgClass} ${catClass}">
-                <div style="width: 100%;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        
-                        <div class="prod-name" style="padding-right: 20px;">${p.name}</div>
-                        
-                        <div style="display: flex; align-items: center; gap: 20px; flex-shrink: 0;">
-                            ${p.offer ? `<span style="color: #e65100; font-weight: 700; font-size: 16px; white-space: nowrap;">${p.offer}</span>` : ''}
-                            <div class="prod-price">${p.price}</div>
+            html += `
+                <div class="product-card ${bgClass} ${catClass}">
+                    <div style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div class="prod-name" style="padding-right: 20px;">${p.name}</div>
+                            <div style="display: flex; align-items: center; gap: 20px; flex-shrink: 0;">
+                                ${p.offer ? `<span style="color: #e65100; font-weight: 700; font-size: 16px; white-space: nowrap;">${p.offer}</span>` : ''}
+                                <div class="prod-price">${p.price}</div>
+                            </div>
+                        </div>
+                        <div class="status-line" style="margin-top: 10px;">
+                            ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
+                            ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
                         </div>
                     </div>
+                </div>`;
+        });
+        container.innerHTML = html + '</div>';
+        container.scrollTop = 0;
+    },
 
-                    <div class="status-line" style="margin-top: 10px;">
-                        ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
-                        ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
-                    </div>
-                </div>
-            </div>`;
-    });
-    container.innerHTML = html + '</div>';
-    container.scrollTop = 0;
-},
-
-handleSearch() {
+    handleSearch() {
         const q = document.getElementById('main-search').value.toLowerCase();
         if (!q) { this.renderHome(); return; }
         this.currentView = 'search';
@@ -174,29 +179,21 @@ handleSearch() {
             p.name.toLowerCase().includes(q) || (p.tags && p.tags.toLowerCase().includes(q))
         ).sort((a,b) => a.name.localeCompare(b.name));
         this.renderList(results);
-        
-        // Update the A-Z rail for search results
         this.renderAZ(results); 
-        
         document.getElementById('az-rail').style.display = 'flex';
         this.renderSidebar();
     },
 
-renderAZ(products) {
+    renderAZ(products) {
         const rail = document.getElementById('az-rail');
         if (!rail) return;
-
-        // Use the provided product list (filtered) or fallback to all data
         const listToScan = products || this.data;
-
         const activeLetters = new Set(
             listToScan
                 .filter(p => p.name) 
                 .map(p => p.name.trim().charAt(0).toUpperCase())
         );
-
         const alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-        
         rail.innerHTML = alpha.map(l => {
             const hasItems = activeLetters.has(l);
             if (hasItems) {
