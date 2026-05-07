@@ -58,7 +58,7 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    height: 100%;
+    height: calc(100vh - var(--header-height) - 60px);
 }
 .sidebar-nav-links {
     display: flex;
