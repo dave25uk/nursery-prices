@@ -8,6 +8,14 @@ const app = {
     currentView: 'all',
     editingId: null,
 
+    lockScroll() {
+        document.body.style.overflow = 'hidden';
+    },
+
+    unlockScroll() {
+        document.body.style.overflow = '';
+    },
+
     async init() {
         const { data, error } = await sb.from('products').select('*');
         if (!error && data) {
@@ -28,61 +36,21 @@ const app = {
         else this.renderCategory(this.currentView);
     },
 
-renderSidebar() {
-    const nav = document.getElementById('sidebar-nav');
-    
-    // 1. Navigation Back (Top)
-    let html = `
-        <button class="nav-btn" onclick="window.location.href='index.html'" 
-                style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
-            ← BACK TO SHOP
-        </button>`;
+    renderSidebar() {
+        const listContainer = document.getElementById('sidebar-nav-list');
+        if (!listContainer) return;
 
-    // 2. Action Buttons (Grouped together)
-    html += `
-        <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
-            + NEW PRODUCT
-        </button>
+        let html = '';
+        const allActive = this.currentView === 'all' ? 'active' : '';
+        html += `<button class="nav-btn ${allActive}" onclick="app.renderAll()" style="margin-bottom: 10px;">VIEW ALL STOCK</button>`;
 
-        <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
-            + NEW CATEGORY
-        </button>`;
-
-    // 3. View All Button
-    html += `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()" style="margin-bottom: 10px;">VIEW ALL STOCK</button>`;
-    
-    // 4. Category List Container
-    html += `<div class="sidebar-nav-links">`;
-
-    this.categories.forEach(cat => {
-        const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-        const isActive = this.currentView === cat ? 'active' : '';
+        this.categories.forEach(cat => {
+            const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+            const isActive = this.currentView === cat ? 'active' : '';
+            html += `<button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">${cat.toUpperCase()}</button>`;
+        });
         
-        html += `
-            <button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
-                ${cat.toUpperCase()}
-            </button>`;
-    });
-    
-    html += `</div>`;
-    nav.innerHTML = html;
-},
-
-    addNewCategory() {
-        const newCat = prompt("Enter the name for the new category:");
-        if (newCat && newCat.trim() !== "") {
-            const formattedCat = newCat.trim();
-            // Open modal in "Add" mode
-            this.openModal(null);
-            
-            // Temporarily add to the dropdown so it can be saved
-            const catSelect = document.getElementById('edit-cat');
-            const option = document.createElement("option");
-            option.value = formattedCat;
-            option.text = formattedCat;
-            catSelect.add(option);
-            catSelect.value = formattedCat;
-        }
+        listContainer.innerHTML = html;
     },
 
     renderAll() {
@@ -102,23 +70,21 @@ renderSidebar() {
     renderList(products) {
         const container = document.getElementById('main-content');
         let html = '<div class="product-list">';
-        
         products.forEach(p => {
             const s = (p.stock || "").toLowerCase();
             const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
             const catClass = `cat-${(p.category || "none").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-
             html += `
-                <div class="product-card ${bgClass} ${catClass}" onclick="app.openModal(${p.id})" style="cursor:pointer;">
+                <div class="product-card ${bgClass} ${catClass}" onclick="app.openModal(${p.id})">
                     <div style="width: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <div class="prod-name" style="padding-right: 20px;">${p.name}</div>
-                            <div style="display: flex; align-items: center; gap: 20px; flex-shrink: 0;">
-                                ${p.offer ? `<span style="color: #e65100; font-weight: 700; font-size: 16px; white-space: nowrap;">${p.offer}</span>` : ''}
+                            <div class="prod-name">${p.name}</div>
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                ${p.offer ? `<span style="color: #e65100; font-weight: 700;">${p.offer}</span>` : ''}
                                 <div class="prod-price">${p.price}</div>
                             </div>
                         </div>
-                        <div class="status-line" style="margin-top: 10px;">
+                        <div class="status-line">
                             ${p.stock ? `<span class="stock-label">${p.stock}</span>` : ''}
                             ${p.comments ? `<span class="comment-label">${p.comments}</span>` : ''}
                         </div>
@@ -131,9 +97,8 @@ renderSidebar() {
 
     openModal(id) {
         this.editingId = id;
+        this.lockScroll();
         const modal = document.getElementById('edit-modal');
-        
-        // Populate the SELECT dropdown
         const catSelect = document.getElementById('edit-cat');
         catSelect.innerHTML = this.categories.map(c => `<option value="${c}">${c}</option>`).join('');
 
@@ -146,23 +111,9 @@ renderSidebar() {
             document.getElementById('edit-price').value = p.price || '';
             document.getElementById('edit-comments').value = p.comments || '';
             document.getElementById('del-btn').style.display = "block";
-
-            const stockSelect = document.getElementById('edit-stock');
-            const dbValue = (p.stock || "").trim();
-            
-            let matched = false;
-            for (let i = 0; i < stockSelect.options.length; i++) {
-                if (stockSelect.options[i].value.toLowerCase() === dbValue.toLowerCase()) {
-                    stockSelect.selectedIndex = i;
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) stockSelect.selectedIndex = 0;
-
+            document.getElementById('edit-stock').value = p.stock || '';
         } else {
             document.getElementById('modal-title').innerText = "Add New Product";
-            // Default to first category in list if available
             document.getElementById('edit-cat').value = this.categories[0] || '';
             document.getElementById('edit-name').value = '';
             document.getElementById('edit-offer').value = '';
@@ -171,10 +122,13 @@ renderSidebar() {
             document.getElementById('edit-comments').value = '';
             document.getElementById('del-btn').style.display = "none";
         }
-        modal.style.display = "flex";
+        modal.style.display = "block";
     },
 
-    closeModal() { document.getElementById('edit-modal').style.display = "none"; },
+    closeModal() {
+        document.getElementById('edit-modal').style.display = "none";
+        this.unlockScroll();
+    },
 
     async saveProduct() {
         const payload = {
@@ -185,28 +139,26 @@ renderSidebar() {
             stock: document.getElementById('edit-stock').value,
             comments: document.getElementById('edit-comments').value
         };
-
-        let result;
-        if (this.editingId) {
-            result = await sb.from('products').update(payload).eq('id', this.editingId);
-        } else {
-            result = await sb.from('products').insert([payload]);
-        }
-
-        if (result.error) {
-            console.error("SAVE ERROR:", result.error);
-            alert("Error saving: " + result.error.message);
-        } else {
-            this.closeModal();
-            await this.init(); 
-        }
+        if (this.editingId) await sb.from('products').update(payload).eq('id', this.editingId);
+        else await sb.from('products').insert([payload]);
+        this.closeModal();
+        await this.init();
     },
 
     async deleteProduct() {
-        if (confirm("Permanently delete this item?")) {
+        if (confirm("Delete this item?")) {
             await sb.from('products').delete().eq('id', this.editingId);
             this.closeModal();
             this.init();
+        }
+    },
+
+    addNewCategory() {
+        const newCat = prompt("New category name:");
+        if (newCat) {
+            this.categories.push(newCat);
+            this.openModal(null);
+            document.getElementById('edit-cat').value = newCat;
         }
     },
 
