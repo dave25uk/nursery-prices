@@ -8,16 +8,6 @@ const app = {
     currentView: 'all',
     editingId: null,
 
-    lockScroll() {
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-    },
-
-    unlockScroll() {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-    },
-
     async init() {
         const { data, error } = await sb.from('products').select('*');
         if (!error && data) {
@@ -38,43 +28,54 @@ const app = {
         else this.renderCategory(this.currentView);
     },
 
-    renderSidebar() {
-        const nav = document.getElementById('sidebar-nav');
-        let html = `
-            <button class="nav-btn" onclick="window.location.href='index.html'" 
-                    style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
-                ← BACK TO SHOP
-            </button>`;
+renderSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    
+    // 1. Navigation Back (Top)
+    let html = `
+        <button class="nav-btn" onclick="window.location.href='index.html'" 
+                style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
+            ← BACK TO SHOP
+        </button>`;
 
-        html += `
-            <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
-                + NEW PRODUCT
-            </button>
-            <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
-                + NEW CATEGORY
-            </button>`;
+    // 2. Action Buttons (Grouped together)
+    html += `
+        <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
+            + NEW PRODUCT
+        </button>
 
-        html += `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()" style="margin-bottom: 10px;">VIEW ALL STOCK</button>`;
-        html += `<div class="sidebar-nav-links">`;
+        <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
+            + NEW CATEGORY
+        </button>`;
 
-        this.categories.forEach(cat => {
-            const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-            const isActive = this.currentView === cat ? 'active' : '';
-            html += `
-                <button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
-                    ${cat.toUpperCase()}
-                </button>`;
-        });
+    // 3. View All Button
+    html += `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()" style="margin-bottom: 10px;">VIEW ALL STOCK</button>`;
+    
+    // 4. Category List Container
+    html += `<div class="sidebar-nav-links">`;
+
+    this.categories.forEach(cat => {
+        const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+        const isActive = this.currentView === cat ? 'active' : '';
         
-        html += `</div>`;
-        nav.innerHTML = html;
-    },
+        html += `
+            <button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
+                ${cat.toUpperCase()}
+            </button>`;
+    });
+    
+    html += `</div>`;
+    nav.innerHTML = html;
+},
 
     addNewCategory() {
         const newCat = prompt("Enter the name for the new category:");
         if (newCat && newCat.trim() !== "") {
             const formattedCat = newCat.trim();
+            // Open modal in "Add" mode
             this.openModal(null);
+            
+            // Temporarily add to the dropdown so it can be saved
             const catSelect = document.getElementById('edit-cat');
             const option = document.createElement("option");
             option.value = formattedCat;
@@ -101,10 +102,12 @@ const app = {
     renderList(products) {
         const container = document.getElementById('main-content');
         let html = '<div class="product-list">';
+        
         products.forEach(p => {
             const s = (p.stock || "").toLowerCase();
             const bgClass = s.includes('out') ? 'card-out' : s.includes('low') ? 'card-low' : '';
             const catClass = `cat-${(p.category || "none").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+
             html += `
                 <div class="product-card ${bgClass} ${catClass}" onclick="app.openModal(${p.id})" style="cursor:pointer;">
                     <div style="width: 100%;">
@@ -128,8 +131,9 @@ const app = {
 
     openModal(id) {
         this.editingId = id;
-        this.lockScroll();
         const modal = document.getElementById('edit-modal');
+        
+        // Populate the SELECT dropdown
         const catSelect = document.getElementById('edit-cat');
         catSelect.innerHTML = this.categories.map(c => `<option value="${c}">${c}</option>`).join('');
 
@@ -145,6 +149,7 @@ const app = {
 
             const stockSelect = document.getElementById('edit-stock');
             const dbValue = (p.stock || "").trim();
+            
             let matched = false;
             for (let i = 0; i < stockSelect.options.length; i++) {
                 if (stockSelect.options[i].value.toLowerCase() === dbValue.toLowerCase()) {
@@ -154,8 +159,10 @@ const app = {
                 }
             }
             if (!matched) stockSelect.selectedIndex = 0;
+
         } else {
             document.getElementById('modal-title').innerText = "Add New Product";
+            // Default to first category in list if available
             document.getElementById('edit-cat').value = this.categories[0] || '';
             document.getElementById('edit-name').value = '';
             document.getElementById('edit-offer').value = '';
@@ -164,14 +171,10 @@ const app = {
             document.getElementById('edit-comments').value = '';
             document.getElementById('del-btn').style.display = "none";
         }
-        modal.style.display = "block"; // Changed to block for scroll behavior
-        modal.scrollTop = 0;
+        modal.style.display = "flex";
     },
 
-    closeModal() {
-        document.getElementById('edit-modal').style.display = "none";
-        this.unlockScroll();
-    },
+    closeModal() { document.getElementById('edit-modal').style.display = "none"; },
 
     async saveProduct() {
         const payload = {
