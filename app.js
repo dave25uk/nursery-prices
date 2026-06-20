@@ -147,7 +147,10 @@ renderList(products) {
                 <div style="width: 100%;">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                         
-                        <div class="prod-name" style="padding-right: 20px;">${p.name}</div>
+                        <div class="prod-name" style="padding-right: 20px;">
+    ${p.name}
+    ${p.matchedTag ? `<div style="color: #0288d1; font-size: 14px; font-weight: 700; margin-top: 4px; text-transform: none;">Matches: ${p.matchedTag}</div>` : ''}
+</div>
                         
                         <div style="display: flex; align-items: center; gap: 20px; flex-shrink: 0;">
                             ${p.offer ? `<span style="color: #e65100; font-weight: 700; font-size: 16px; white-space: nowrap;">${p.offer}</span>` : ''}
@@ -167,20 +170,39 @@ renderList(products) {
 },
 
 handleSearch() {
-        const q = document.getElementById('main-search').value.toLowerCase();
-        if (!q) { this.renderHome(); return; }
-        this.currentView = 'search';
-        const results = this.data.filter(p => 
-            p.name.toLowerCase().includes(q) || (p.tags && p.tags.toLowerCase().includes(q))
-        ).sort((a,b) => a.name.localeCompare(b.name));
-        this.renderList(results);
+    const q = document.getElementById('main-search').value.toLowerCase().trim();
+    if (!q) { this.renderHome(); return; }
+    this.currentView = 'search';
+
+    const results = this.data.filter(p => {
+        // Clear any previous match
+        p.matchedTag = null;
+
+        const nameMatch = p.name.toLowerCase().includes(q);
         
-        // Update the A-Z rail for search results
-        this.renderAZ(results); 
-        
-        document.getElementById('az-rail').style.display = 'flex';
-        this.renderSidebar();
-    },
+        let tagMatch = false;
+        if (p.tags) {
+            // Split tags by comma, clean up spaces, and find the first individual tag that matches
+            const tagsArray = p.tags.split(',').map(t => t.trim());
+            const matchingTag = tagsArray.find(t => t.toLowerCase().includes(q));
+            
+            if (matchingTag) {
+                p.matchedTag = matchingTag; // Save the exact casing of the matching tag
+                tagMatch = true;
+            }
+        }
+
+        return nameMatch || tagMatch;
+    }).sort((a,b) => a.name.localeCompare(b.name));
+
+    this.renderList(results);
+    
+    // Update the A-Z rail for search results
+    this.renderAZ(results); 
+    
+    document.getElementById('az-rail').style.display = 'flex';
+    this.renderSidebar();
+},
 
 renderAZ(products) {
         const rail = document.getElementById('az-rail');
