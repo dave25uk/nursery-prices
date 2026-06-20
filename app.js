@@ -149,7 +149,7 @@ renderList(products) {
                         
                         <div class="prod-name" style="padding-right: 20px;">
     ${p.name}
-    ${p.matchedTag ? `<div style="color: #0288d1; font-size: 14px; font-weight: 700; margin-top: 4px; text-transform: none;">Matches: ${p.matchedTag}</div>` : ''}
+    ${p.matchedTag ? `<div style="color: #0288d1; font-size: 14px; font-weight: 700; margin-top: 4px; text-transform: none;">${p.matchedTag}</div>` : ''}
 </div>
                         
                         <div style="display: flex; align-items: center; gap: 20px; flex-shrink: 0;">
