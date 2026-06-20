@@ -28,54 +28,79 @@ const app = {
         else this.renderCategory(this.currentView);
     },
 
-renderSidebar() {
-    const nav = document.getElementById('sidebar-nav');
-    
-    // 1. Navigation Back (Top)
-    let html = `
-        <button class="nav-btn" onclick="window.location.href='index.html'" 
-                style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
-            ← BACK TO SHOP
-        </button>`;
-
-    // 2. Action Buttons (Grouped together)
-    html += `
-        <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
-            + NEW PRODUCT
-        </button>
-
-        <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
-            + NEW CATEGORY
-        </button>`;
-
-    // 3. View All Button
-    html += `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()" style="margin-bottom: 10px;">VIEW ALL STOCK</button>`;
-    
-    // 4. Category List Container
-    html += `<div class="sidebar-nav-links">`;
-
-    this.categories.forEach(cat => {
-        const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
-        const isActive = this.currentView === cat ? 'active' : '';
+    addTagField(value = '') {
+        const container = document.getElementById('tags-container');
+        if (!container) return;
         
-        html += `
-            <button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
-                ${cat.toUpperCase()}
+        const row = document.createElement('div');
+        row.className = 'tag-input-row';
+        row.style.display = 'flex';
+        row.style.gap = '8px';
+        
+        row.innerHTML = `
+            <input type="text" class="edit-tag-item" value="${value.trim()}" placeholder="e.g. Petunia" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:5px;">
+            <button type="button" onclick="this.parentElement.remove()" style="padding: 10px; border: 1px solid #d32f2f; background: #ffebee; color: #d32f2f; border-radius: 5px; font-weight: bold; cursor: pointer;">✕</button>
+        `;
+        container.appendChild(row);
+    },
+
+    getTagsFromUI() {
+        const inputs = document.querySelectorAll('.edit-tag-item');
+        const tagsArray = [];
+        inputs.forEach(input => {
+            if (input.value.trim() !== '') {
+                tagsArray.push(input.value.trim());
+            }
+        });
+        return tagsArray.join(', ');
+    },
+
+    renderSidebar() {
+        const nav = document.getElementById('sidebar-nav');
+        
+        // 1. Navigation Back (Top)
+        let html = `
+            <button class="nav-btn" onclick="window.location.href='index.html'" 
+                    style="margin-bottom: 20px; background: #444; color: #fff; width: 100%;">
+                ← BACK TO SHOP
             </button>`;
-    });
-    
-    html += `</div>`;
-    nav.innerHTML = html;
-},
+
+        // 2. Action Buttons (Grouped together)
+        html += `
+            <button class="nav-btn" onclick="app.openModal(null)" style="border-left: 1px solid var(--border-color) !important;">
+                + NEW PRODUCT
+            </button>
+
+            <button class="nav-btn" onclick="app.addNewCategory()" style="border-left: 1px solid var(--border-color) !important; margin-bottom: 20px;">
+                + NEW CATEGORY
+            </button>`;
+
+        // 3. View All Button
+        html += `<button class="nav-btn ${this.currentView === 'all' ? 'active' : ''}" onclick="app.renderAll()" style="margin-bottom: 10px;">VIEW ALL STOCK</button>`;
+        
+        // 4. Category List Container
+        html += `<div class="sidebar-nav-links">`;
+
+        this.categories.forEach(cat => {
+            const catClass = `cat-${cat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}`;
+            const isActive = this.currentView === cat ? 'active' : '';
+            
+            html += `
+                <button class="nav-btn ${catClass} ${isActive}" onclick="app.renderCategory('${cat}')">
+                    ${cat.toUpperCase()}
+                </button>`;
+        });
+        
+        html += `</div>`;
+        nav.innerHTML = html;
+    },
 
     addNewCategory() {
         const newCat = prompt("Enter the name for the new category:");
         if (newCat && newCat.trim() !== "") {
             const formattedCat = newCat.trim();
-            // Open modal in "Add" mode
             this.openModal(null);
             
-            // Temporarily add to the dropdown so it can be saved
             const catSelect = document.getElementById('edit-cat');
             const option = document.createElement("option");
             option.value = formattedCat;
@@ -133,9 +158,12 @@ renderSidebar() {
         this.editingId = id;
         const modal = document.getElementById('edit-modal');
         
-        // Populate the SELECT dropdown
         const catSelect = document.getElementById('edit-cat');
         catSelect.innerHTML = this.categories.map(c => `<option value="${c}">${c}</option>`).join('');
+
+        // Clear previous dynamic tag fields
+        const tagsContainer = document.getElementById('tags-container');
+        if (tagsContainer) tagsContainer.innerHTML = '';
 
         if (id) {
             const p = this.data.find(x => x.id === id);
@@ -146,6 +174,14 @@ renderSidebar() {
             document.getElementById('edit-price').value = p.price || '';
             document.getElementById('edit-comments').value = p.comments || '';
             document.getElementById('del-btn').style.display = "block";
+
+            // Parse tags and populate fields if they exist
+            if (p.tags && p.tags.trim() !== '') {
+                const tagsList = p.tags.split(',');
+                tagsList.forEach(t => this.addTagField(t));
+            } else {
+                this.addTagField('');
+            }
 
             const stockSelect = document.getElementById('edit-stock');
             const dbValue = (p.stock || "").trim();
@@ -162,7 +198,6 @@ renderSidebar() {
 
         } else {
             document.getElementById('modal-title').innerText = "Add New Product";
-            // Default to first category in list if available
             document.getElementById('edit-cat').value = this.categories[0] || '';
             document.getElementById('edit-name').value = '';
             document.getElementById('edit-offer').value = '';
@@ -170,6 +205,8 @@ renderSidebar() {
             document.getElementById('edit-stock').value = ''; 
             document.getElementById('edit-comments').value = '';
             document.getElementById('del-btn').style.display = "none";
+            
+            this.addTagField('');
         }
         modal.style.display = "flex";
     },
@@ -183,7 +220,8 @@ renderSidebar() {
             offer: document.getElementById('edit-offer').value,
             price: document.getElementById('edit-price').value,
             stock: document.getElementById('edit-stock').value,
-            comments: document.getElementById('edit-comments').value
+            comments: document.getElementById('edit-comments').value,
+            tags: this.getTagsFromUI() // Collects inputs into a comma-separated string
         };
 
         let result;
