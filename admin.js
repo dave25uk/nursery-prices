@@ -2,6 +2,24 @@ const SUPABASE_URL = 'https://xnjsvclilulxxnuvyfla.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuanN2Y2xpbHVseHhudXZ5ZmxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTM0NjYsImV4cCI6MjA5MTQ2OTQ2Nn0.jJheSQImSYPRaALGyuUNU5bkUl2D7SihcolMdk7dBDI';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// --- THE HELPER GOES HERE, OUTSIDE THE APP OBJECT ---
+function getAdminPin() {
+    const pin = sessionStorage.getItem('adminPin');
+    if (!pin) {
+        alert('Admin session expired. Please log in again.');
+        window.location.href = 'index.html';
+        return null;
+    }
+    return pin;
+}
+// ----------------------------------------------------
+
+const app = {
+    data: [],
+    categories: [],
+    currentView: 'all',
+    editingId: null,
+
     async init() {
         const { data, error } = await sb.from('products').select('*');
         if (!error && data) {
@@ -10,24 +28,6 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             this.refreshUI();
         }
     },
-
-const app = {
-    data: [],
-    categories: [],
-    currentView: 'all',
-    editingId: null,
-
-
-
-function getAdminPin() {
-  const pin = sessionStorage.getItem('adminPin');
-  if (!pin) {
-    alert('Admin session expired. Please log in again.');
-    window.location.href = 'index.html';
-    return null;
-  }
-  return pin;
-}
 
     processCategories() {
         this.categories = [...new Set(this.data.map(p => p.category))].sort();
@@ -173,7 +173,6 @@ function getAdminPin() {
         const catSelect = document.getElementById('edit-cat');
         catSelect.innerHTML = this.categories.map(c => `<option value="${c}">${c}</option>`).join('');
 
-        // Clear previous dynamic tag fields
         const tagsContainer = document.getElementById('tags-container');
         if (tagsContainer) tagsContainer.innerHTML = '';
 
@@ -187,7 +186,6 @@ function getAdminPin() {
             document.getElementById('edit-comments').value = p.comments || '';
             document.getElementById('del-btn').style.display = "block";
 
-            // Parse tags and populate fields if they exist
             if (p.tags && p.tags.trim() !== '') {
                 const tagsList = p.tags.split(',');
                 tagsList.forEach(t => this.addTagField(t));
@@ -225,69 +223,78 @@ function getAdminPin() {
 
     closeModal() { document.getElementById('edit-modal').style.display = "none"; },
 
-async saveProduct() {
-  const pin = getAdminPin();
-  if (!pin) return;
+    async saveProduct() {
+        const pin = getAdminPin();
+        if (!pin) return;
 
-  const payload = {
-    category: document.getElementById('edit-cat').value,
-    name: document.getElementById('edit-name').value,
-    offer: document.getElementById('edit-offer').value,
-    price: document.getElementById('edit-price').value,
-    stock: document.getElementById('edit-stock').value,
-    comments: document.getElementById('edit-comments').value,
-    tags: this.getTagsFromUI(),
-  };
+        const payload = {
+            category: document.getElementById('edit-cat').value,
+            name: document.getElementById('edit-name').value,
+            offer: document.getElementById('edit-offer').value,
+            price: document.getElementById('edit-price').value,
+            stock: document.getElementById('edit-stock').value,
+            comments: document.getElementById('edit-comments').value,
+            tags: this.getTagsFromUI()
+        };
 
-  const action = this.editingId ? 'update' : 'create';
+        const action = this.editingId ? 'update' : 'create';
 
-  const res = await fetch('/api/products', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-admin-pin': pin,
+        const res = await fetch('/api/products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-admin-pin': pin,
+            },
+            body: JSON.stringify({
+                action,
+                id: this.editingId,
+                product: payload
+            })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert('Error saving: ' + (err.message || res.statusText));
+        } else {
+            this.closeModal();
+            await this.init();
+        }
     },
-    body: JSON.stringify({
-      action,
-      id: this.editingId,
-      product: payload,
-    }),
-  });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    alert('Error saving: ' + (err.message || res.statusText));
-  } else {
-    this.closeModal();
-    await this.init();
-  }
-},
+    async deleteProduct() {
+        if (!confirm("Permanently delete this item?")) return;
 
-async deleteProduct() {
-  if (!confirm('Permanently delete this item?')) return;
+        const pin = getAdminPin();
+        if (!pin) return;
 
-  const pin = getAdminPin();
-  if (!pin) return;
+        const res = await fetch('/api/products', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-admin-pin': pin,
+            },
+            body: JSON.stringify({
+                action: 'delete',
+                id: this.editingId
+            })
+        });
 
-  const res = await fetch('/api/products', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-admin-pin': pin,
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert('Error deleting: ' + (err.message || res.statusText));
+        } else {
+            this.closeModal();
+            await this.init();
+        }
     },
-    body: JSON.stringify({
-      action: 'delete',
-      id: this.editingId,
-    }),
-  });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    alert('Error deleting: ' + (err.message || res.statusText));
-  } else {
-    this.closeModal();
-    await this.init();
-  }
-},
+    handleSearch() {
+        const q = document.getElementById('main-search').value.toLowerCase();
+        if (!q) { this.renderAll(); return; }
+        this.currentView = 'search';
+        const res = this.data.filter(p => p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q)));
+        this.renderList(res);
+    }
+};
 
 app.init();
