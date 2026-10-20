@@ -2,12 +2,6 @@ const SUPABASE_URL = 'https://xnjsvclilulxxnuvyfla.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuanN2Y2xpbHVseHhudXZ5ZmxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4OTM0NjYsImV4cCI6MjA5MTQ2OTQ2Nn0.jJheSQImSYPRaALGyuUNU5bkUl2D7SihcolMdk7dBDI';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const app = {
-    data: [],
-    categories: [],
-    currentView: 'all',
-    editingId: null,
-
     async init() {
         const { data, error } = await sb.from('products').select('*');
         if (!error && data) {
@@ -16,6 +10,14 @@ const app = {
             this.refreshUI();
         }
     },
+
+const app = {
+    data: [],
+    categories: [],
+    currentView: 'all',
+    editingId: null,
+
+
 
 function getAdminPin() {
   const pin = sessionStorage.getItem('adminPin');
