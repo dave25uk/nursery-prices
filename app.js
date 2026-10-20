@@ -17,13 +17,11 @@ const app = {
 },
 
 verifyPin() {
-    const pin = document.getElementById('pin-field').value;
-    if (pin === "123456") {
-        window.location.href = "management.html";
-    } else {
-        alert("Incorrect PIN.");
-        document.getElementById('pin-field').value = '';
-    }
+  const pin = document.getElementById('pin-field').value.trim();
+  if (!pin) return;
+
+  sessionStorage.setItem('adminPin', pin);
+  window.location.href = 'management.html';
 },
 
 async init() {

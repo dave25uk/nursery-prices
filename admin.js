@@ -17,6 +17,16 @@ const app = {
         }
     },
 
+function getAdminPin() {
+  const pin = sessionStorage.getItem('adminPin');
+  if (!pin) {
+    alert('Admin session expired. Please log in again.');
+    window.location.href = 'index.html';
+    return null;
+  }
+  return pin;
+}
+
     processCategories() {
         this.categories = [...new Set(this.data.map(p => p.category))].sort();
     },
@@ -213,48 +223,69 @@ const app = {
 
     closeModal() { document.getElementById('edit-modal').style.display = "none"; },
 
-    async saveProduct() {
-        const payload = {
-            category: document.getElementById('edit-cat').value,
-            name: document.getElementById('edit-name').value,
-            offer: document.getElementById('edit-offer').value,
-            price: document.getElementById('edit-price').value,
-            stock: document.getElementById('edit-stock').value,
-            comments: document.getElementById('edit-comments').value,
-            tags: this.getTagsFromUI() // Collects inputs into a comma-separated string
-        };
+async saveProduct() {
+  const pin = getAdminPin();
+  if (!pin) return;
 
-        let result;
-        if (this.editingId) {
-            result = await sb.from('products').update(payload).eq('id', this.editingId);
-        } else {
-            result = await sb.from('products').insert([payload]);
-        }
+  const payload = {
+    category: document.getElementById('edit-cat').value,
+    name: document.getElementById('edit-name').value,
+    offer: document.getElementById('edit-offer').value,
+    price: document.getElementById('edit-price').value,
+    stock: document.getElementById('edit-stock').value,
+    comments: document.getElementById('edit-comments').value,
+    tags: this.getTagsFromUI(),
+  };
 
-        if (result.error) {
-            console.error("SAVE ERROR:", result.error);
-            alert("Error saving: " + result.error.message);
-        } else {
-            this.closeModal();
-            await this.init(); 
-        }
+  const action = this.editingId ? 'update' : 'create';
+
+  const res = await fetch('/api/products', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-pin': pin,
     },
+    body: JSON.stringify({
+      action,
+      id: this.editingId,
+      product: payload,
+    }),
+  });
 
-    async deleteProduct() {
-        if (confirm("Permanently delete this item?")) {
-            await sb.from('products').delete().eq('id', this.editingId);
-            this.closeModal();
-            this.init();
-        }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Error saving: ' + (err.message || res.statusText));
+  } else {
+    this.closeModal();
+    await this.init();
+  }
+},
+
+async deleteProduct() {
+  if (!confirm('Permanently delete this item?')) return;
+
+  const pin = getAdminPin();
+  if (!pin) return;
+
+  const res = await fetch('/api/products', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-admin-pin': pin,
     },
+    body: JSON.stringify({
+      action: 'delete',
+      id: this.editingId,
+    }),
+  });
 
-    handleSearch() {
-        const q = document.getElementById('main-search').value.toLowerCase();
-        if (!q) { this.renderAll(); return; }
-        this.currentView = 'search';
-        const res = this.data.filter(p => p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q)));
-        this.renderList(res);
-    }
-};
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert('Error deleting: ' + (err.message || res.statusText));
+  } else {
+    this.closeModal();
+    await this.init();
+  }
+},
 
 app.init();
