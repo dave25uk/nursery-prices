@@ -16,13 +16,37 @@ const app = {
     field.focus(); // Auto-focus so the numeric keypad pops up immediately
 },
 
-verifyPin() {
-  const pin = document.getElementById('pin-field').value.trim();
-  if (!pin) return;
+    async verifyPin() {
+        const pinField = document.getElementById('pin-field');
+        const pin = pinField.value.trim();
+        if (!pin) return;
 
-  sessionStorage.setItem('adminPin', pin);
-  window.location.href = 'management.html';
-},
+        try {
+            // Ask the Vercel server if this PIN is correct
+            const res = await fetch('/api/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-admin-pin': pin,
+                },
+                body: JSON.stringify({ action: 'verify' })
+            });
+
+            if (res.ok) {
+                // PIN is correct: save it to the session and go to management
+                sessionStorage.setItem('adminPin', pin);
+                window.location.href = "management.html";
+            } else {
+                // PIN is wrong: show error and clear the field
+                alert("Incorrect PIN.");
+                pinField.value = '';
+                pinField.focus();
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Network error. Please try again.");
+        }
+    },
 
 async init() {
     const cache = localStorage.getItem('nursery_data');

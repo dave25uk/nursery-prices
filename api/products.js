@@ -1,4 +1,3 @@
-// api/products.js
 export default async function handler(req, res) {
   // 1. Check the PIN sent by the admin page
   const pin = req.headers['x-admin-pin'];
@@ -7,6 +6,12 @@ export default async function handler(req, res) {
   }
 
   const { action, product, id } = req.body;
+
+  // --- NEW: Just check if the PIN is valid and return ---
+  if (action === 'verify') {
+    return res.status(200).json({ message: 'PIN valid' });
+  }
+  // -------------------------------------------------------
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
