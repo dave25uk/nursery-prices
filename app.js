@@ -7,18 +7,23 @@ const app = {
     categories: [],
     currentView: 'home',
 	lastUpdated: '', // New variable to store the date
-	openManagement() {
-    // Instead of prompt, we show our custom modal
-    const modal = document.getElementById('pin-modal');
-    const field = document.getElementById('pin-field');
-    field.value = ''; // Clear previous attempt
-    modal.style.display = 'flex';
-    field.focus(); // Auto-focus so the numeric keypad pops up immediately
-},
+    openManagement() {
+        // Instead of prompt, we show our custom modal
+        const modal = document.getElementById('pin-modal');
+        const field = document.getElementById('pin-field');
+        const error = document.getElementById('pin-error'); // Get error div
+        
+        field.value = ''; // Clear previous attempt
+        error.style.display = 'none'; // Hide previous error
+        modal.style.display = 'flex';
+        field.focus(); // Auto-focus so the numeric keypad pops up immediately
+    },
 
-    async verifyPin() {
+async verifyPin() {
         const pinField = document.getElementById('pin-field');
+        const errorDiv = document.getElementById('pin-error');
         const pin = pinField.value.trim();
+        
         if (!pin) return;
 
         try {
@@ -37,14 +42,14 @@ const app = {
                 sessionStorage.setItem('adminPin', pin);
                 window.location.href = "management.html";
             } else {
-                // PIN is wrong: show error and clear the field
-                alert("Incorrect PIN.");
+                // PIN is wrong: show inline error and clear the field
+                errorDiv.style.display = 'block';
                 pinField.value = '';
                 pinField.focus();
             }
         } catch (err) {
             console.error(err);
-            alert("Network error. Please try again.");
+            alert("Network error. Please try again."); // Keep alert for actual network failures
         }
     },
 
